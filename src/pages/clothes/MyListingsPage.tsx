@@ -67,7 +67,7 @@ const MyListingsPage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
-      <div className="border-b border-border bg-card px-4 pb-0 pt-12 safe-top">
+      <div className="border-b border-border bg-card px-4 pb-0 pt-safe">
         <h1 className="font-display mb-4 text-xl font-bold">Mes annonces</h1>
         <div className="flex gap-1 overflow-x-auto pb-0 scrollbar-none">
           {STATUS_TABS.map(({ key, label }) => (

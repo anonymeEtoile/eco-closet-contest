@@ -57,7 +57,7 @@ const SearchPage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-border bg-card/95 px-4 pb-3 pt-12 backdrop-blur-md safe-top">
+      <div className="sticky top-0 z-20 border-b border-border bg-card/95 px-4 pb-3 pt-safe backdrop-blur-md">
         <h1 className="font-display mb-3 text-xl font-bold">Rechercher</h1>
         <div className="flex gap-2">
           <div className="relative flex-1">

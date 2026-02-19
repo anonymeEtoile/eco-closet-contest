@@ -68,7 +68,7 @@ const PhotoVote: React.FC = () => {
 
   return (
     <div className="mode-photo flex min-h-screen flex-col bg-background pb-24">
-      <div className="border-b border-border bg-card px-4 pb-4 pt-12 safe-top">
+      <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
         <h1 className="font-display text-xl font-bold">Voter</h1>
         {!votesActive && <p className="mt-1 text-sm text-muted-foreground">Les votes ne sont pas encore ouverts.</p>}
       </div>
