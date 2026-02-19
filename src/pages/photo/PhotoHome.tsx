@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
+import ThemeToggle from '@/components/ThemeToggle';
 import { Camera, Trophy, Calendar, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+
 
 interface ContestSettings {
   titre: string;
@@ -21,7 +23,6 @@ interface ContestSettings {
 
 const PhotoHome: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useApp();
   const [settings, setSettings] = useState<ContestSettings | null>(null);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const PhotoHome: React.FC = () => {
   return (
     <div className="mode-photo flex min-h-screen flex-col bg-background pb-24">
       {/* Hero */}
-      <div className="relative overflow-hidden px-6 pb-12 pt-16 safe-top" style={{ background: 'linear-gradient(135deg, hsl(150 15% 8%), hsl(120 25% 14%))' }}>
+      <div className="relative overflow-hidden px-6 pb-12 pt-safe" style={{ background: 'linear-gradient(135deg, hsl(150 15% 8%), hsl(120 25% 14%))' }}>
         <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full" style={{ background: 'radial-gradient(circle, hsl(120 40% 45% / 0.12), transparent 70%)' }} />
         <div className="mb-4 flex items-center gap-2">
           <Leaf size={20} className="text-primary" />

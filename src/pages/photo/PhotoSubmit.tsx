@@ -49,7 +49,7 @@ const PhotoSubmit: React.FC = () => {
 
   return (
     <div className="mode-photo flex min-h-screen flex-col bg-background pb-24">
-      <div className="border-b border-border bg-card px-4 pb-4 pt-12 safe-top">
+      <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
         <button onClick={() => navigate(-1)} className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
           <ChevronLeft size={16} /> Retour
         </button>

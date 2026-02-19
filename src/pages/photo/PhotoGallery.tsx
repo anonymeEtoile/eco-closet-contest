@@ -44,7 +44,7 @@ const PhotoGallery: React.FC = () => {
 
   return (
     <div className="mode-photo flex min-h-screen flex-col bg-background pb-24">
-      <div className="border-b border-border bg-card px-4 pb-4 pt-12 safe-top">
+      <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
         <h1 className="font-display text-xl font-bold">Galerie</h1>
         <p className="text-sm text-muted-foreground">{photos.length} photo{photos.length > 1 ? 's' : ''} soumise{photos.length > 1 ? 's' : ''}</p>
       </div>

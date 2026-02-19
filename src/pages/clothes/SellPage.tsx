@@ -96,7 +96,7 @@ const SellPage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-border bg-card/95 px-4 pb-3 pt-12 backdrop-blur-md safe-top">
+      <div className="sticky top-0 z-10 border-b border-border bg-card/95 px-4 pb-3 pt-safe backdrop-blur-md">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-muted-foreground">
             <ChevronLeft size={24} />

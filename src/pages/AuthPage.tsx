@@ -8,14 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Recycle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import ClassSelector from '@/components/ClassSelector';
+import ThemeToggle from '@/components/ThemeToggle';
 
 type AuthTab = 'login-eleve' | 'signup-eleve' | 'login-admin';
 
-const CLASSES = [
-  'Seconde 1','Seconde 2','Seconde 3','Seconde 4','Seconde 5','Seconde 6','Seconde 7','Seconde 8',
-  'Première 1','Première 2','Première 3','Première 4','Première 5','Première 6',
-  'Terminal 1','Terminal 2','Terminal 3','Terminal 4','Terminal 5','Terminal 6',
-];
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +27,7 @@ const AuthPage: React.FC = () => {
   const [showPass, setShowPass] = useState(false);
 
   const [form, setForm] = useState({
-    email: '', password: '', prenom: '', nom: '', classe: CLASSES[0],
+    email: '', password: '', prenom: '', nom: '', classe: '',
   });
 
   useEffect(() => {
@@ -95,14 +92,17 @@ const AuthPage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <div className="gradient-hero px-6 pb-8 pt-safe-top pt-10">
-        <button
-          onClick={() => navigate('/')}
-          className="mb-6 flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground"
-        >
-          <ArrowLeft size={18} />
-          <span className="text-sm">Retour</span>
-        </button>
+      <div className="gradient-hero px-6 pb-8 pt-safe">
+        <div className="flex items-start justify-between">
+          <button
+            onClick={() => navigate('/')}
+            className="mb-6 flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground"
+          >
+            <ArrowLeft size={18} />
+            <span className="text-sm">Retour</span>
+          </button>
+          <ThemeToggle className="mt-1" />
+        </div>
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-foreground/15">
             <Recycle size={24} className="text-primary-foreground" />
@@ -113,6 +113,7 @@ const AuthPage: React.FC = () => {
           </div>
         </div>
       </div>
+
 
       {/* Category selector */}
       <div className="mx-6 -mt-4 flex gap-2 rounded-2xl bg-card p-1.5 shadow-card">
@@ -232,17 +233,11 @@ const AuthPage: React.FC = () => {
                 </div>
                 <div>
                   <Label htmlFor="classe">Classe</Label>
-                  <select
-                    id="classe"
-                    value={form.classe}
-                    onChange={e => updateForm('classe', e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    {CLASSES.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                  <div className="mt-1.5">
+                    <ClassSelector value={form.classe} onChange={v => updateForm('classe', v)} />
+                  </div>
                 </div>
+
                 <div>
                   <Label htmlFor="email-signup">Email</Label>
                   <Input

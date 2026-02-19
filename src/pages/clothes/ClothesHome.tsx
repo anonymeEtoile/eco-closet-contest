@@ -4,8 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
+import ThemeToggle from '@/components/ThemeToggle';
 import { Heart, Search as SearchIcon, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
 
 interface Listing {
   id: string;
@@ -133,9 +135,14 @@ const ClothesHome: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
-      <div className="gradient-hero px-4 pb-6 pt-12 safe-top">
-        <h1 className="font-display text-2xl font-bold text-primary-foreground">Vêtements</h1>
-        <p className="mt-0.5 text-sm text-primary-foreground/70">Seconde vie garantie 🌱</p>
+      <div className="gradient-hero px-4 pb-6 pt-safe">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-primary-foreground">Vêtements</h1>
+            <p className="mt-0.5 text-sm text-primary-foreground/70">Seconde vie garantie 🌱</p>
+          </div>
+          <ThemeToggle />
+        </div>
 
         {/* Search bar */}
         <div className="relative mt-4">

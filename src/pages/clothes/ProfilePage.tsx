@@ -4,11 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
-import { User, Heart, Lock, Trash2, LogOut, ChevronRight } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
+import { Heart, Lock, Trash2, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+
 
 interface FavListing {
   id: string;
@@ -68,9 +70,8 @@ const ProfilePage: React.FC = () => {
   if (section === 'password') {
     return (
       <div className="flex min-h-screen flex-col bg-background pb-24">
-        <div className="border-b border-border bg-card px-4 pb-4 pt-12 safe-top">
-          <button onClick={() => setSection('main')} className="mb-3 text-sm text-primary">← Retour</button>
-          <h1 className="font-display text-xl font-bold">Changer le mot de passe</h1>
+        <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
+
         </div>
         <form onSubmit={changePassword} className="px-4 py-6 space-y-4">
           <div>
@@ -97,9 +98,8 @@ const ProfilePage: React.FC = () => {
   if (section === 'favorites') {
     return (
       <div className="flex min-h-screen flex-col bg-background pb-24">
-        <div className="border-b border-border bg-card px-4 pb-4 pt-12 safe-top">
-          <button onClick={() => setSection('main')} className="mb-3 text-sm text-primary">← Retour</button>
-          <h1 className="font-display text-xl font-bold">Mes favoris</h1>
+        <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
+
         </div>
         <div className="px-4 py-4 grid grid-cols-2 gap-3">
           {favorites.length === 0 ? (
@@ -139,22 +139,32 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
-      <div className="gradient-hero px-4 pb-8 pt-12 safe-top">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-foreground/15 text-2xl font-bold text-primary-foreground">
-            {profile?.prenom?.[0] || '?'}
+      <div className="gradient-hero px-4 pb-8 pt-safe">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-foreground/15 text-2xl font-bold text-primary-foreground">
+              {profile?.prenom?.[0] || '?'}
+            </div>
+            <div>
+              <p className="text-xl font-bold text-primary-foreground">
+                {profile?.prenom} {profile?.nom}
+              </p>
+              <p className="text-sm text-primary-foreground/70">{profile?.classe}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xl font-bold text-primary-foreground">
-              {profile?.prenom} {profile?.nom}
-            </p>
-            <p className="text-sm text-primary-foreground/70">{profile?.classe}</p>
-          </div>
+          <ThemeToggle />
         </div>
       </div>
 
+
       {/* Menu */}
       <div className="px-4 py-4 space-y-2 animate-fade-in">
+        {/* Theme Toggle */}
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+          <p className="mb-2 text-sm font-medium">Thème de l'interface</p>
+          <ThemeToggle variant="full" />
+        </div>
+
         <button
           onClick={() => setSection('favorites')}
           className="flex w-full items-center justify-between rounded-xl border border-border bg-card p-4 shadow-card"
