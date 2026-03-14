@@ -30,7 +30,7 @@ const SearchPage: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    categorie: '', taille: '', etat: '', priceMin: '', priceMax: '', donOnly: false,
+    categorie: '', taille: '', etat: '',
   });
 
   const search = async () => {
