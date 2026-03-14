@@ -12,8 +12,6 @@ import { cn } from '@/lib/utils';
 interface Listing {
   id: string;
   title: string;
-  type: string;
-  price: number | null;
   taille: string | null;
   marque: string | null;
   etat: string | null;
