@@ -111,22 +111,13 @@ const SearchPage: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={filters.donOnly}
-                  onChange={e => setFilters(f => ({ ...f, donOnly: e.target.checked }))}
-                  className="accent-primary"
-                />
-                <span className="text-sm font-medium">Dons uniquement</span>
-              </label>
-              {hasFilters && (
+            {hasFilters && (
+              <div className="flex items-center">
                 <button onClick={clearFilters} className="ml-auto flex items-center gap-1 text-xs text-destructive">
                   <X size={12} /> Effacer les filtres
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
