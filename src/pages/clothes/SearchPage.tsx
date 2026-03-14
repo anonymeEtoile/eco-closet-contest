@@ -40,9 +40,6 @@ const SearchPage: React.FC = () => {
     if (filters.categorie) q = q.eq('categorie', filters.categorie);
     if (filters.taille) q = q.eq('taille', filters.taille);
     if (filters.etat) q = q.eq('etat', filters.etat);
-    if (filters.donOnly) q = q.eq('type', 'don');
-    if (filters.priceMin) q = q.gte('price', parseFloat(filters.priceMin));
-    if (filters.priceMax) q = q.lte('price', parseFloat(filters.priceMax));
     const { data } = await q.order('created_at', { ascending: false });
     setListings((data || []) as Listing[]);
     setLoading(false);
