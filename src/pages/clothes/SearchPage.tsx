@@ -48,7 +48,7 @@ const SearchPage: React.FC = () => {
   useEffect(() => { search(); }, [query, filters]);
 
   const clearFilters = () => setFilters({ categorie: '', taille: '', etat: '' });
-  const hasFilters = Object.values(filters).some(v => v !== '' && v !== false);
+  const hasFilters = Object.values(filters).some(v => v !== '');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   return (
