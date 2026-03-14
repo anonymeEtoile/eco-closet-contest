@@ -59,12 +59,10 @@ const ListingCard: React.FC<{
             className={cn(isFavorite ? "fill-red-500 text-red-500" : "text-foreground/60")}
           />
         </button>
-        {/* Type badge */}
-        {listing.type === 'don' && (
-          <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-            Don
-          </span>
-        )}
+        {/* Don badge */}
+        <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+          Don
+        </span>
       </div>
 
       {/* Info */}
