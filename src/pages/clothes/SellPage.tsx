@@ -26,8 +26,6 @@ const SellPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: '',
-    type: 'vente' as 'vente' | 'don',
-    price: '',
     taille: '',
     etat: '',
     categorie: '',
