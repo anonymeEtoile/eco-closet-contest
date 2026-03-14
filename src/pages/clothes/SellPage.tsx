@@ -55,7 +55,6 @@ const SellPage: React.FC = () => {
     e.preventDefault();
     if (!user) return;
     if (!form.title.trim()) { toast({ title: 'Titre requis', variant: 'destructive' }); return; }
-    if (form.type === 'vente' && !form.price) { toast({ title: 'Prix requis', variant: 'destructive' }); return; }
 
     setLoading(true);
     try {
