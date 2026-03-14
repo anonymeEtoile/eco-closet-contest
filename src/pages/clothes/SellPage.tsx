@@ -141,27 +141,6 @@ const SellPage: React.FC = () => {
           />
         </div>
 
-        {/* Type */}
-        <div>
-          <Label className="mb-2 block">Type</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {(['vente', 'don'] as const).map(t => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => update('type', t)}
-                className={cn(
-                  "rounded-xl border py-3 text-sm font-semibold capitalize transition-colors",
-                  form.type === t
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground"
-                )}
-              >
-                {t === 'vente' ? '💰 Vente' : '🎁 Don gratuit'}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Title */}
         <div>
