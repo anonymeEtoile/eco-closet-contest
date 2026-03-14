@@ -161,9 +161,7 @@ const SearchPage: React.FC = () => {
                         <Tag size={28} className="text-muted-foreground/40" />
                       </div>
                     )}
-                    {listing.type === 'don' && (
-                      <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Don</span>
-                    )}
+                    <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Don</span>
                   </div>
                   <div className="p-3">
                     <p className="truncate text-sm font-semibold">{listing.title}</p>
