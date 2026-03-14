@@ -98,7 +98,7 @@ const SellPage: React.FC = () => {
           <button onClick={() => navigate(-1)} className="text-muted-foreground">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="font-display text-xl font-bold">Vendre / Donner</h1>
+          <h1 className="font-display text-xl font-bold">Déposer un vêtement</h1>
         </div>
       </div>
 
