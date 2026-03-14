@@ -69,8 +69,8 @@ const SellPage: React.FC = () => {
       const { error } = await supabase.from('listings').insert({
         seller_id: user.id,
         title: form.title.trim(),
-        type: form.type,
-        price: form.type === 'vente' ? parseFloat(form.price) : null,
+        type: 'don',
+        price: null,
         taille: form.taille || null,
         etat: form.etat || null,
         categorie: form.categorie || null,
