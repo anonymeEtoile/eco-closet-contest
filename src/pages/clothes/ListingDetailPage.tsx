@@ -152,9 +152,9 @@ const ListingDetailPage: React.FC = () => {
       <div className="px-4 py-5 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <h1 className="font-display text-2xl font-bold leading-tight">{listing.title}</h1>
-          <p className="flex-shrink-0 text-xl font-bold text-primary">
-            {listing.type === 'don' ? 'Don' : `${listing.price?.toFixed(2)} €`}
-          </p>
+          <span className="flex-shrink-0 rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+            Don gratuit
+          </span>
         </div>
 
         {/* Tags */}

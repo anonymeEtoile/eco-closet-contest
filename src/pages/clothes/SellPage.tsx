@@ -26,8 +26,6 @@ const SellPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: '',
-    type: 'vente' as 'vente' | 'don',
-    price: '',
     taille: '',
     etat: '',
     categorie: '',
@@ -57,7 +55,6 @@ const SellPage: React.FC = () => {
     e.preventDefault();
     if (!user) return;
     if (!form.title.trim()) { toast({ title: 'Titre requis', variant: 'destructive' }); return; }
-    if (form.type === 'vente' && !form.price) { toast({ title: 'Prix requis', variant: 'destructive' }); return; }
 
     setLoading(true);
     try {
@@ -72,8 +69,8 @@ const SellPage: React.FC = () => {
       const { error } = await supabase.from('listings').insert({
         seller_id: user.id,
         title: form.title.trim(),
-        type: form.type,
-        price: form.type === 'vente' ? parseFloat(form.price) : null,
+        type: 'don',
+        price: null,
         taille: form.taille || null,
         etat: form.etat || null,
         categorie: form.categorie || null,
@@ -101,7 +98,7 @@ const SellPage: React.FC = () => {
           <button onClick={() => navigate(-1)} className="text-muted-foreground">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="font-display text-xl font-bold">Vendre / Donner</h1>
+          <h1 className="font-display text-xl font-bold">Déposer un vêtement</h1>
         </div>
       </div>
 
@@ -144,27 +141,6 @@ const SellPage: React.FC = () => {
           />
         </div>
 
-        {/* Type */}
-        <div>
-          <Label className="mb-2 block">Type</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {(['vente', 'don'] as const).map(t => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => update('type', t)}
-                className={cn(
-                  "rounded-xl border py-3 text-sm font-semibold capitalize transition-colors",
-                  form.type === t
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground"
-                )}
-              >
-                {t === 'vente' ? '💰 Vente' : '🎁 Don gratuit'}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Title */}
         <div>
@@ -178,22 +154,6 @@ const SellPage: React.FC = () => {
           />
         </div>
 
-        {/* Price */}
-        {form.type === 'vente' && (
-          <div>
-            <Label htmlFor="price">Prix (€) *</Label>
-            <Input
-              id="price"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="0.00"
-              value={form.price}
-              onChange={e => update('price', e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-        )}
 
         {/* Marque */}
         <div>
@@ -281,7 +241,7 @@ const SellPage: React.FC = () => {
         </div>
 
         <Button type="submit" className="w-full gap-2 py-6 text-base font-semibold" disabled={loading}>
-          {loading ? <><Loader2 size={18} className="animate-spin" /> Publication…</> : <><Tag size={18} /> Publier l'annonce</>}
+          {loading ? <><Loader2 size={18} className="animate-spin" /> Publication…</> : <><Tag size={18} /> Déposer le vêtement</>}
         </Button>
       </form>
 

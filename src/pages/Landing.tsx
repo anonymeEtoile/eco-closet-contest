@@ -57,7 +57,7 @@ const Landing: React.FC = () => {
             Lycée Marie Madeleine Fourcade
           </h1>
           <p className="mb-2 text-lg font-medium opacity-90">
-            Vente &amp; Don de Vêtements
+            Don de Vêtements — Semaine Écologique
           </p>
           <p className="text-sm leading-relaxed opacity-75">
             {settings?.presentation_text || 'Les éco-délégués organisent une collecte de vêtements solidaire. Donnez une seconde vie à vos vêtements !'}

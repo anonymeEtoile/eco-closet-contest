@@ -30,7 +30,7 @@ const SearchPage: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    categorie: '', taille: '', etat: '', priceMin: '', priceMax: '', donOnly: false,
+    categorie: '', taille: '', etat: '',
   });
 
   const search = async () => {
@@ -40,9 +40,6 @@ const SearchPage: React.FC = () => {
     if (filters.categorie) q = q.eq('categorie', filters.categorie);
     if (filters.taille) q = q.eq('taille', filters.taille);
     if (filters.etat) q = q.eq('etat', filters.etat);
-    if (filters.donOnly) q = q.eq('type', 'don');
-    if (filters.priceMin) q = q.gte('price', parseFloat(filters.priceMin));
-    if (filters.priceMax) q = q.lte('price', parseFloat(filters.priceMax));
     const { data } = await q.order('created_at', { ascending: false });
     setListings((data || []) as Listing[]);
     setLoading(false);
@@ -50,8 +47,8 @@ const SearchPage: React.FC = () => {
 
   useEffect(() => { search(); }, [query, filters]);
 
-  const clearFilters = () => setFilters({ categorie: '', taille: '', etat: '', priceMin: '', priceMax: '', donOnly: false });
-  const hasFilters = Object.values(filters).some(v => v !== '' && v !== false);
+  const clearFilters = () => setFilters({ categorie: '', taille: '', etat: '' });
+  const hasFilters = Object.values(filters).some(v => v !== '');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   return (
@@ -114,22 +111,13 @@ const SearchPage: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={filters.donOnly}
-                  onChange={e => setFilters(f => ({ ...f, donOnly: e.target.checked }))}
-                  className="accent-primary"
-                />
-                <span className="text-sm font-medium">Dons uniquement</span>
-              </label>
-              {hasFilters && (
+            {hasFilters && (
+              <div className="flex items-center">
                 <button onClick={clearFilters} className="ml-auto flex items-center gap-1 text-xs text-destructive">
                   <X size={12} /> Effacer les filtres
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -173,15 +161,11 @@ const SearchPage: React.FC = () => {
                         <Tag size={28} className="text-muted-foreground/40" />
                       </div>
                     )}
-                    {listing.type === 'don' && (
-                      <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Don</span>
-                    )}
+                    <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">Don</span>
                   </div>
                   <div className="p-3">
                     <p className="truncate text-sm font-semibold">{listing.title}</p>
-                    <p className="mt-1 text-sm font-bold text-primary">
-                      {listing.type === 'don' ? 'Gratuit' : `${listing.price?.toFixed(2)} €`}
-                    </p>
+                    <p className="mt-1 text-sm font-bold text-primary">Gratuit</p>
                   </div>
                 </div>
               );

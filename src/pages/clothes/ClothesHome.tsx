@@ -12,8 +12,6 @@ import { cn } from '@/lib/utils';
 interface Listing {
   id: string;
   title: string;
-  type: string;
-  price: number | null;
   taille: string | null;
   marque: string | null;
   etat: string | null;
@@ -61,21 +59,17 @@ const ListingCard: React.FC<{
             className={cn(isFavorite ? "fill-red-500 text-red-500" : "text-foreground/60")}
           />
         </button>
-        {/* Type badge */}
-        {listing.type === 'don' && (
-          <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-            Don
-          </span>
-        )}
+        {/* Don badge */}
+        <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+          Don
+        </span>
       </div>
 
       {/* Info */}
       <div className="p-3">
         <p className="truncate text-sm font-semibold text-foreground">{listing.title}</p>
         <div className="mt-1 flex items-center justify-between">
-          <p className="text-sm font-bold text-primary">
-            {listing.type === 'don' ? 'Gratuit' : `${listing.price?.toFixed(2)} €`}
-          </p>
+          <p className="text-sm font-bold text-primary">Gratuit</p>
           {listing.taille && (
             <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
               {listing.taille}
@@ -138,8 +132,8 @@ const ClothesHome: React.FC = () => {
       <div className="gradient-hero px-4 pb-6 pt-safe">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold text-primary-foreground">Vêtements</h1>
-            <p className="mt-0.5 text-sm text-primary-foreground/70">Seconde vie garantie 🌱</p>
+            <h1 className="font-display text-2xl font-bold text-primary-foreground">Dons de vêtements</h1>
+            <p className="mt-0.5 text-sm text-primary-foreground/70">Semaine écologique 🌱</p>
           </div>
           <ThemeToggle />
         </div>
