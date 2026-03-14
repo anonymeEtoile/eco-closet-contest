@@ -154,22 +154,6 @@ const SellPage: React.FC = () => {
           />
         </div>
 
-        {/* Price */}
-        {form.type === 'vente' && (
-          <div>
-            <Label htmlFor="price">Prix (€) *</Label>
-            <Input
-              id="price"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="0.00"
-              value={form.price}
-              onChange={e => update('price', e.target.value)}
-              className="mt-1.5"
-            />
-          </div>
-        )}
 
         {/* Marque */}
         <div>
