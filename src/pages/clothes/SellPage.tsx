@@ -241,7 +241,7 @@ const SellPage: React.FC = () => {
         </div>
 
         <Button type="submit" className="w-full gap-2 py-6 text-base font-semibold" disabled={loading}>
-          {loading ? <><Loader2 size={18} className="animate-spin" /> Publication…</> : <><Tag size={18} /> Publier l'annonce</>}
+          {loading ? <><Loader2 size={18} className="animate-spin" /> Publication…</> : <><Tag size={18} /> Déposer le vêtement</>}
         </Button>
       </form>
 

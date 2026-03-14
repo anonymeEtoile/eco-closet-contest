@@ -132,8 +132,8 @@ const ClothesHome: React.FC = () => {
       <div className="gradient-hero px-4 pb-6 pt-safe">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold text-primary-foreground">Vêtements</h1>
-            <p className="mt-0.5 text-sm text-primary-foreground/70">Seconde vie garantie 🌱</p>
+            <h1 className="font-display text-2xl font-bold text-primary-foreground">Dons de vêtements</h1>
+            <p className="mt-0.5 text-sm text-primary-foreground/70">Semaine écologique 🌱</p>
           </div>
           <ThemeToggle />
         </div>

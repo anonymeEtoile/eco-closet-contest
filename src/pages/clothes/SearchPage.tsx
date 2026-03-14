@@ -165,9 +165,7 @@ const SearchPage: React.FC = () => {
                   </div>
                   <div className="p-3">
                     <p className="truncate text-sm font-semibold">{listing.title}</p>
-                    <p className="mt-1 text-sm font-bold text-primary">
-                      {listing.type === 'don' ? 'Gratuit' : `${listing.price?.toFixed(2)} €`}
-                    </p>
+                    <p className="mt-1 text-sm font-bold text-primary">Gratuit</p>
                   </div>
                 </div>
               );

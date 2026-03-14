@@ -126,9 +126,7 @@ const MyListingsPage: React.FC = () => {
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
                     <p className="font-semibold text-foreground line-clamp-1">{l.title}</p>
-                    <p className="text-sm font-bold text-primary">
-                      {l.type === 'don' ? 'Don gratuit' : `${l.price?.toFixed(2)} €`}
-                    </p>
+                    <p className="text-sm font-bold text-primary">Don gratuit</p>
                   </div>
                   <div className="flex gap-2">
                     {(l.status === 'en_ligne' || l.status === 'reserve') && (

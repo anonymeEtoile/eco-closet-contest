@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const NAV_ITEMS_ELEVE = [
   { path: '/app', icon: Home, label: 'Accueil' },
   { path: '/app/rechercher', icon: Search, label: 'Rechercher' },
-  { path: '/app/vendre', icon: PlusSquare, label: 'Vendre' },
+  { path: '/app/vendre', icon: PlusSquare, label: 'Déposer' },
   { path: '/app/mes-annonces', icon: List, label: 'Mes annonces' },
   { path: '/app/profil', icon: User, label: 'Profil' },
 ];
