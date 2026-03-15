@@ -37,18 +37,18 @@ const PhotoHome: React.FC = () => {
       <div className="relative overflow-hidden px-6 pb-12 pt-safe" style={{ background: 'linear-gradient(135deg, hsl(150 15% 8%), hsl(120 25% 14%))' }}>
         <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full" style={{ background: 'radial-gradient(circle, hsl(120 40% 45% / 0.12), transparent 70%)' }} />
         <div className="mb-4 flex items-center gap-2">
-          <Leaf size={20} className="text-primary" />
-          <span className="text-sm font-medium text-foreground/70">Lycée Marie Madeleine Fourcade</span>
+          <Leaf size={20} className="text-green-400" />
+          <span className="text-sm font-medium text-white/70">Lycée Marie Madeleine Fourcade</span>
         </div>
-        <h1 className="font-display text-3xl font-bold leading-tight text-foreground">
+        <h1 className="font-display text-3xl font-bold leading-tight text-white">
           {settings?.titre || 'Concours Photo Nature'}
         </h1>
         {settings?.theme && (
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 text-sm font-medium text-green-300">
             🌿 Thème : {settings.theme}
           </p>
         )}
-        <p className="mt-4 text-sm leading-relaxed text-foreground/60">
+        <p className="mt-4 text-sm leading-relaxed text-white/60">
           {settings?.description}
         </p>
       </div>
