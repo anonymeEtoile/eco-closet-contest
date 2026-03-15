@@ -108,8 +108,43 @@
     --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.3);
   }
 
-  /* ── Mode Concours Photo ── */
+  /* ── Mode Concours Photo (clair) ── */
   .mode-photo {
+    --background: 140 20% 96%;
+    --foreground: 150 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 25% 12%;
+
+    --primary: 120 40% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 140 20% 90%;
+    --secondary-foreground: 150 20% 20%;
+
+    --muted: 140 15% 92%;
+    --muted-foreground: 150 10% 45%;
+
+    --accent: 80 30% 85%;
+    --accent-foreground: 150 25% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 140 15% 86%;
+    --input: 140 15% 86%;
+    --ring: 120 40% 35%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(120 40% 35%), hsl(150 30% 25%));
+    --shadow-card: 0 2px 16px -4px hsl(150 25% 12% / 0.1);
+  }
+
+  /* ── Mode Concours Photo (sombre) ── */
+  .dark.mode-photo,
+  .mode-photo.dark {
     --background: 150 15% 6%;
     --foreground: 120 20% 90%;
 
