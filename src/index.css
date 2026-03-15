@@ -143,6 +143,7 @@
   }
 
   /* ── Mode Concours Photo (sombre) ── */
+  .dark .mode-photo,
   .dark.mode-photo,
   .mode-photo.dark {
     --background: 150 15% 6%;
