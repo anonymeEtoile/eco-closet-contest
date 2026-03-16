@@ -148,6 +148,16 @@ const AdminPage: React.FC = () => {
     toast({ title: 'Annonce refusée' });
   };
 
+  const deleteListing = async (id: string) => {
+    const { error } = await supabase.from('listings').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchPending();
+    toast({ title: 'Annonce supprimée' });
+  };
+
   const toggleSuspend = async (userId: string, suspended: boolean) => {
     await supabase.from('profiles').update({ suspended: !suspended }).eq('id', userId);
     fetchUsers();
