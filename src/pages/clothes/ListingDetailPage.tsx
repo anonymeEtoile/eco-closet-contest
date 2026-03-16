@@ -46,10 +46,28 @@ const ListingDetailPage: React.FC = () => {
     if (!id) return;
     const fetchAll = async () => {
       const [listRes, settingsRes] = await Promise.all([
-        supabase.from('listings').select('*, seller:profiles!seller_id(prenom, classe)').eq('id', id).single(),
+        supabase.from('listings').select('*').eq('id', id).single(),
         supabase.from('event_settings').select('instructions_remise').single(),
       ]);
-      if (listRes.data) setListing(listRes.data as unknown as ListingDetail);
+
+      if (listRes.data) {
+        const { data: seller } = await supabase
+          .from('profiles')
+          .select('prenom, classe')
+          .eq('id', listRes.data.seller_id)
+          .single();
+
+        setListing({
+          ...listRes.data,
+          seller: seller
+            ? {
+                prenom: seller.prenom,
+                classe: seller.classe,
+              }
+            : undefined,
+        } as ListingDetail);
+      }
+
       if (settingsRes.data) setInstructions(settingsRes.data.instructions_remise);
 
       if (user) {
