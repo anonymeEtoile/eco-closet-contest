@@ -95,7 +95,7 @@ const PhotoAdmin: React.FC = () => {
     if (data) setSettings(data as ContestSettings);
   };
 
-  useEffect(() => { fetchPhotos(); }, []);
+  useEffect(() => { if (section === 'moderation') fetchPhotos(); }, [section, moderationStatus]);
   useEffect(() => { if (section === 'settings') fetchSettings(); }, [section]);
 
   const validate = async (id: string) => {
