@@ -43,12 +43,49 @@ const PhotoAdmin: React.FC = () => {
 
   const fetchPhotos = async () => {
     setLoading(true);
-    const { data } = await supabase
+
+    const { data: pendingPhotos, error: photosError } = await supabase
       .from('contest_photos')
-      .select('*, author:profiles!user_id(prenom, nom, classe)')
+      .select('*')
       .eq('status', 'en_attente')
       .order('created_at', { ascending: true });
-    setPhotos((data || []) as unknown as ContestPhoto[]);
+
+    if (photosError) {
+      setPhotos([]);
+      setLoading(false);
+      toast({ title: 'Erreur', description: photosError.message, variant: 'destructive' });
+      return;
+    }
+
+    const authorIds = [...new Set((pendingPhotos || []).map((photo) => photo.user_id))];
+
+    const { data: authors, error: authorsError } = authorIds.length
+      ? await supabase
+          .from('profiles')
+          .select('id, prenom, nom, classe')
+          .in('id', authorIds)
+      : { data: [], error: null };
+
+    if (authorsError) {
+      setPhotos([]);
+      setLoading(false);
+      toast({ title: 'Erreur', description: authorsError.message, variant: 'destructive' });
+      return;
+    }
+
+    const authorMap = new Map((authors || []).map((author) => [author.id, author]));
+    const mergedPhotos = (pendingPhotos || []).map((photo) => ({
+      ...photo,
+      author: authorMap.get(photo.user_id)
+        ? {
+            prenom: authorMap.get(photo.user_id)!.prenom,
+            nom: authorMap.get(photo.user_id)!.nom,
+            classe: authorMap.get(photo.user_id)!.classe,
+          }
+        : undefined,
+    }));
+
+    setPhotos(mergedPhotos as ContestPhoto[]);
     setLoading(false);
   };
 
