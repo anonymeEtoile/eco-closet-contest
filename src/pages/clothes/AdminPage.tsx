@@ -130,7 +130,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchPending(); }, []);
+  useEffect(() => { if (section === 'moderation') fetchPending(); }, [section, moderationStatus]);
   useEffect(() => { if (section === 'users') fetchUsers(); }, [section]);
   useEffect(() => { if (section === 'settings') fetchEventSettings(); }, [section]);
 
