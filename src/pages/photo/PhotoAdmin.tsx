@@ -112,6 +112,16 @@ const PhotoAdmin: React.FC = () => {
     toast({ title: 'Photo refusée' });
   };
 
+  const deletePhoto = async (id: string) => {
+    const { error } = await supabase.from('contest_photos').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchPhotos();
+    toast({ title: 'Photo supprimée' });
+  };
+
   const saveSettings = async () => {
     if (!settings) return;
     setSavingSettings(true);
