@@ -60,12 +60,49 @@ const AdminPage: React.FC = () => {
 
   const fetchPending = async () => {
     setLoading(true);
-    const { data } = await supabase
+
+    const { data: pendingListings, error: listingsError } = await supabase
       .from('listings')
-      .select('*, seller:profiles!seller_id(prenom, nom, classe)')
+      .select('*')
       .eq('status', 'en_attente')
       .order('created_at', { ascending: true });
-    setListings((data || []) as unknown as PendingListing[]);
+
+    if (listingsError) {
+      setListings([]);
+      setLoading(false);
+      toast({ title: 'Erreur', description: listingsError.message, variant: 'destructive' });
+      return;
+    }
+
+    const sellerIds = [...new Set((pendingListings || []).map((listing) => listing.seller_id))];
+
+    const { data: sellers, error: sellersError } = sellerIds.length
+      ? await supabase
+          .from('profiles')
+          .select('id, prenom, nom, classe')
+          .in('id', sellerIds)
+      : { data: [], error: null };
+
+    if (sellersError) {
+      setListings([]);
+      setLoading(false);
+      toast({ title: 'Erreur', description: sellersError.message, variant: 'destructive' });
+      return;
+    }
+
+    const sellerMap = new Map((sellers || []).map((seller) => [seller.id, seller]));
+    const mergedListings = (pendingListings || []).map((listing) => ({
+      ...listing,
+      seller: sellerMap.get(listing.seller_id)
+        ? {
+            prenom: sellerMap.get(listing.seller_id)!.prenom,
+            nom: sellerMap.get(listing.seller_id)!.nom,
+            classe: sellerMap.get(listing.seller_id)!.classe,
+          }
+        : undefined,
+    }));
+
+    setListings(mergedListings as PendingListing[]);
     setLoading(false);
   };
 
