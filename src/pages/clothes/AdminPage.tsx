@@ -323,7 +323,7 @@ const AdminPage: React.FC = () => {
                         </Button>
                       </div>
                     </>
-                  ) : role === 'super_admin' ? (
+                  ) : (role === 'super_admin' || role === 'moderateur') ? (
                     <Button variant="outline" size="sm" className="w-full gap-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => deleteListing(l.id)}>
                       <Trash2 size={14} /> Supprimer
                     </Button>

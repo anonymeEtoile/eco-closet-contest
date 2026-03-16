@@ -15,7 +15,6 @@ interface Photo {
 }
 
 const PhotoGallery: React.FC = () => {
-  const navigate = useNavigate();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
