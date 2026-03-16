@@ -41,6 +41,7 @@ const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refusMotif, setRefusMotif] = useState<Record<string, string>>({});
   const [section, setSection] = useState<'moderation' | 'users' | 'settings'>('moderation');
+  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'en_ligne'>('en_attente');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ prenom: string; nom: string; classe: string }>({ prenom: '', nom: '', classe: '' });
