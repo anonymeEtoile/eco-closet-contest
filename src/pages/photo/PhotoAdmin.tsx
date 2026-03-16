@@ -37,6 +37,7 @@ const PhotoAdmin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [motifs, setMotifs] = useState<Record<string, string>>({});
   const [section, setSection] = useState<'moderation' | 'settings'>('moderation');
+  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'validee'>('en_attente');
   const [settings, setSettings] = useState<ContestSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
