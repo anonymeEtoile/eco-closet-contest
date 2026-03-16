@@ -48,7 +48,7 @@ const PhotoAdmin: React.FC = () => {
     const { data: pendingPhotos, error: photosError } = await supabase
       .from('contest_photos')
       .select('*')
-      .eq('status', 'en_attente')
+      .eq('status', moderationStatus)
       .order('created_at', { ascending: true });
 
     if (photosError) {
