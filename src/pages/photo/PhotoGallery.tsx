@@ -22,23 +22,50 @@ const PhotoGallery: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase
+      setLoading(true);
+
+      const { data: validatedPhotos, error: photosError } = await supabase
         .from('contest_photos')
-        .select('*, author:profiles!user_id(prenom, classe)')
+        .select('*')
         .eq('status', 'validee')
         .eq('banned', false);
 
-      if (data) {
-        const withVotes = await Promise.all(
-          (data as unknown as Photo[]).map(async p => {
-            const { count } = await supabase.from('contest_votes').select('*', { count: 'exact', head: true }).eq('photo_id', p.id);
-            return { ...p, vote_count: count || 0 };
-          })
-        );
-        setPhotos(withVotes);
+      if (photosError || !validatedPhotos) {
+        setPhotos([]);
+        setLoading(false);
+        return;
       }
+
+      const authorIds = [...new Set(validatedPhotos.map((photo) => photo.user_id))];
+      const { data: authors } = authorIds.length
+        ? await supabase.from('profiles').select('id, prenom, classe').in('id', authorIds)
+        : { data: [] };
+
+      const authorMap = new Map((authors || []).map((author) => [author.id, author]));
+
+      const withVotes = await Promise.all(
+        validatedPhotos.map(async (photo) => {
+          const { count } = await supabase
+            .from('contest_votes')
+            .select('*', { count: 'exact', head: true })
+            .eq('photo_id', photo.id);
+
+          const author = authorMap.get(photo.user_id);
+
+          return {
+            ...photo,
+            author: author
+              ? { prenom: author.prenom, classe: author.classe }
+              : undefined,
+            vote_count: count || 0,
+          };
+        })
+      );
+
+      setPhotos(withVotes as Photo[]);
       setLoading(false);
     };
+
     fetch();
   }, []);
 

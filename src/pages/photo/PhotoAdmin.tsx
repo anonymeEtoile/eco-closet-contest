@@ -179,12 +179,32 @@ const PhotoAdmin: React.FC = () => {
         {/* Moderation */}
         {section === 'moderation' && (
           <>
+            <div className="flex gap-2">
+              {[
+                { key: 'en_attente' as const, label: 'En attente' },
+                { key: 'validee' as const, label: 'Validées' },
+              ].map((status) => (
+                <button
+                  key={status.key}
+                  onClick={() => setModerationStatus(status.key)}
+                  className={cn(
+                    'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                    moderationStatus === status.key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {status.label}
+                </button>
+              ))}
+            </div>
+
             {loading ? (
               <div className="space-y-3">{[...Array(2)].map((_, i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />)}</div>
             ) : photos.length === 0 ? (
               <div className="flex flex-col items-center py-16 text-center text-muted-foreground">
                 <CheckCircle size={48} className="mb-3 text-primary/30" />
-                <p className="font-semibold">Aucune photo en attente</p>
+                <p className="font-semibold">{moderationStatus === 'en_attente' ? 'Aucune photo en attente' : 'Aucune photo validée'}</p>
               </div>
             ) : photos.map(p => (
               <div key={p.id} className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
@@ -195,21 +215,30 @@ const PhotoAdmin: React.FC = () => {
                   <p className="font-semibold">{p.titre}</p>
                   {p.author && <p className="text-xs text-muted-foreground">{(p.author as unknown as {prenom:string}).prenom} {(p.author as unknown as {nom:string}).nom} · {(p.author as unknown as {classe:string}).classe}</p>}
                 </div>
-                <textarea
-                  placeholder="Motif de refus (requis pour refuser)"
-                  value={motifs[p.id] || ''}
-                  onChange={e => setMotifs(m => ({ ...m, [p.id]: e.target.value }))}
-                  rows={2}
-                  className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 gap-1 border-destructive/30 text-destructive" onClick={() => refuse(p.id)}>
-                    <XCircle size={14} /> Refuser
+
+                {moderationStatus === 'en_attente' ? (
+                  <>
+                    <textarea
+                      placeholder="Motif de refus (requis pour refuser)"
+                      value={motifs[p.id] || ''}
+                      onChange={e => setMotifs(m => ({ ...m, [p.id]: e.target.value }))}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 gap-1 border-destructive/30 text-destructive" onClick={() => refuse(p.id)}>
+                        <XCircle size={14} /> Refuser
+                      </Button>
+                      <Button size="sm" className="flex-1 gap-1" onClick={() => validate(p.id)}>
+                        <CheckCircle size={14} /> Valider
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" className="w-full gap-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => deletePhoto(p.id)}>
+                    <Trash2 size={14} /> Supprimer
                   </Button>
-                  <Button size="sm" className="flex-1 gap-1" onClick={() => validate(p.id)}>
-                    <CheckCircle size={14} /> Valider
-                  </Button>
-                </div>
+                )}
               </div>
             ))}
           </>
