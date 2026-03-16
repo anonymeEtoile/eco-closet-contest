@@ -65,7 +65,7 @@ const AdminPage: React.FC = () => {
     const { data: pendingListings, error: listingsError } = await supabase
       .from('listings')
       .select('*')
-      .eq('status', 'en_attente')
+      .eq('status', moderationStatus)
       .order('created_at', { ascending: true });
 
     if (listingsError) {
