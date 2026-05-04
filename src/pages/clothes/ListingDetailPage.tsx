@@ -6,6 +6,7 @@ import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import { ChevronLeft, Heart, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -40,6 +41,8 @@ const ListingDetailPage: React.FC = () => {
   const [reserved, setReserved] = useState(false);
   const [reserving, setReserving] = useState(false);
   const [instructions, setInstructions] = useState('');
+  const [reservationOpen, setReservationOpen] = useState(false);
+  const [reservationInfo, setReservationInfo] = useState({ salle: '', date: '', heure: '' });
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   useEffect(() => {
@@ -68,7 +71,19 @@ const ListingDetailPage: React.FC = () => {
         } as ListingDetail);
       }
 
-      if (settingsRes.data) setInstructions(settingsRes.data.instructions_remise);
+      if (settingsRes.data) {
+        const settings = settingsRes.data as typeof settingsRes.data & {
+          reservation_salle?: string | null;
+          reservation_date?: string | null;
+          reservation_heure?: string | null;
+        };
+        setInstructions(settings.instructions_remise);
+        setReservationInfo({
+          salle: settings.reservation_salle || '',
+          date: settings.reservation_date || '',
+          heure: settings.reservation_heure || '',
+        });
+      }
 
       if (user) {
         const [favRes, resRes] = await Promise.all([
@@ -102,7 +117,9 @@ const ListingDetailPage: React.FC = () => {
     if (!error) {
       await supabase.from('listings').update({ status: 'reserve' }).eq('id', listing.id);
       setReserved(true);
-      toast({ title: 'Réservé !', description: instructions });
+      setListing({ ...listing, status: 'reserve' });
+      setReservationOpen(true);
+      toast({ title: 'Réservé !' });
     } else {
       toast({ title: 'Déjà réservé', description: error.message, variant: 'destructive' });
     }
@@ -192,6 +209,11 @@ const ListingDetailPage: React.FC = () => {
               {listing.categorie}
             </span>
           )}
+          {listing.status === 'reserve' && (
+            <span className="rounded-lg bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+              Réservé
+            </span>
+          )}
         </div>
 
         {listing.marque && (
@@ -220,6 +242,11 @@ const ListingDetailPage: React.FC = () => {
         )}
 
         {/* Reserve */}
+        {listing.status === 'reserve' && (
+          <div className="rounded-xl bg-primary/10 p-4">
+            <p className="font-semibold text-primary">Ce vêtement est réservé</p>
+          </div>
+        )}
         {user && listing.seller_id !== user.id && listing.status === 'en_ligne' && (
           <div className="pt-2">
             {reserved ? (
@@ -242,6 +269,17 @@ const ListingDetailPage: React.FC = () => {
 
       <BottomNav mode="vente" />
       <ModeFab />
+      <Dialog open={reservationOpen} onOpenChange={setReservationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réservation confirmée</DialogTitle>
+            <DialogDescription>
+              Votre réservation sera disponible{reservationInfo.salle ? ` à la ${reservationInfo.salle}` : ''}{reservationInfo.heure ? ` à ${reservationInfo.heure.slice(0, 5)}` : ''}{reservationInfo.date ? ` le ${format(new Date(reservationInfo.date), 'd MMMM yyyy', { locale: fr })}` : ''}.
+            </DialogDescription>
+          </DialogHeader>
+          {instructions && <p className="text-sm text-muted-foreground">{instructions}</p>}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
