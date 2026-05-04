@@ -50,7 +50,7 @@ const ListingDetailPage: React.FC = () => {
     const fetchAll = async () => {
       const [listRes, settingsRes] = await Promise.all([
         supabase.from('listings').select('*').eq('id', id).single(),
-        supabase.from('event_settings').select('instructions_remise').single(),
+        supabase.from('event_settings').select('instructions_remise, reservation_salle, reservation_date, reservation_heure').single(),
       ]);
 
       if (listRes.data) {
