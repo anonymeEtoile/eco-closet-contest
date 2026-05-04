@@ -122,6 +122,9 @@ export type Database = {
           lieux_depot: string[]
           point_collecte_date: string | null
           presentation_text: string
+          reservation_date: string | null
+          reservation_heure: string | null
+          reservation_salle: string
           semaine_collecte_end: string | null
           semaine_collecte_start: string | null
           updated_at: string
@@ -132,6 +135,9 @@ export type Database = {
           lieux_depot?: string[]
           point_collecte_date?: string | null
           presentation_text?: string
+          reservation_date?: string | null
+          reservation_heure?: string | null
+          reservation_salle?: string
           semaine_collecte_end?: string | null
           semaine_collecte_start?: string | null
           updated_at?: string
@@ -142,6 +148,9 @@ export type Database = {
           lieux_depot?: string[]
           point_collecte_date?: string | null
           presentation_text?: string
+          reservation_date?: string | null
+          reservation_heure?: string | null
+          reservation_salle?: string
           semaine_collecte_end?: string | null
           semaine_collecte_start?: string | null
           updated_at?: string
@@ -316,6 +325,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_orphan_profiles: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -323,6 +333,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      profile_has_auth_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "eleve" | "moderateur" | "super_admin"
