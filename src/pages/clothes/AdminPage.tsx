@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import ThemeToggle from '@/components/ThemeToggle';
-import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, KeyRound, UserX } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -115,11 +115,7 @@ const AdminPage: React.FC = () => {
     const { data: roles } = await supabase.from('user_roles').select('user_id, role');
     const roleMap: Record<string, string> = {};
     (roles || []).forEach((r: { user_id: string; role: string }) => { roleMap[r.user_id] = r.role; });
-    const checkedProfiles = await Promise.all((profiles || []).map(async (p: UserProfile) => {
-      const { data: exists } = await supabase.rpc('profile_has_auth_user', { _user_id: p.id });
-      return exists ? { ...p, role: roleMap[p.id] || 'eleve' } : null;
-    }));
-    const merged = checkedProfiles.filter(Boolean) as UserProfile[];
+    const merged = (profiles || []).map((p: UserProfile) => ({ ...p, role: roleMap[p.id] || 'eleve' }));
     setUsers(merged as UserProfile[]);
   };
 
@@ -231,7 +227,9 @@ const AdminPage: React.FC = () => {
   };
 
   const cleanupDeletedAccounts = async () => {
-    const { error } = await supabase.rpc('cleanup_orphan_profiles');
+    const { error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'cleanup-deleted' },
+    });
     if (error) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
       return;
