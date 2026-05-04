@@ -57,6 +57,13 @@ const ProfilePage: React.FC = () => {
 
   const deleteAccount = async () => {
     if (!confirm('Supprimer définitivement votre compte ? Cette action est irréversible.')) return;
+    const { error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'delete-self' },
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
     await signOut();
     toast({ title: 'Compte supprimé' });
     navigate('/');

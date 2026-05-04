@@ -70,7 +70,7 @@ const PhotoSubmit: React.FC = () => {
             </div>
           )}
         </div>
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleFile(e.target.files)} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => handleFile(e.target.files)} />
         <div>
           <Label htmlFor="titre">Titre *</Label>
           <Input id="titre" placeholder="Donnez un titre à votre photo" value={titre} onChange={e => setTitre(e.target.value)} className="mt-1.5" />
