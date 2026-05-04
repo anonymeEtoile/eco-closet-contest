@@ -404,7 +404,7 @@ const AdminPage: React.FC = () => {
         {/* Users */}
         {section === 'users' && (
           <div className="space-y-3">
-            <Button variant="outline" size="sm" className="w-full gap-2" onClick={cleanupDeletedAccounts}>
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => cleanupDeletedAccounts()}>
               <RotateCcw size={14} /> Nettoyer les comptes déjà supprimés
             </Button>
             {users.map(u => (
@@ -543,6 +543,20 @@ const AdminPage: React.FC = () => {
                   rows={2}
                   className="mt-1.5 w-full resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="text-sm font-medium">Salle de retrait</label>
+                  <Input value={eventSettings.reservation_salle} onChange={e => setEventSettings(s => ({ ...s, reservation_salle: e.target.value }))} className="mt-1.5" placeholder="Salle A101" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Jour de retrait</label>
+                  <Input type="date" value={eventSettings.reservation_date} onChange={e => setEventSettings(s => ({ ...s, reservation_date: e.target.value }))} className="mt-1.5" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Heure de retrait</label>
+                  <Input type="time" value={eventSettings.reservation_heure} onChange={e => setEventSettings(s => ({ ...s, reservation_heure: e.target.value }))} className="mt-1.5" />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">Lieux de dépôt</label>
