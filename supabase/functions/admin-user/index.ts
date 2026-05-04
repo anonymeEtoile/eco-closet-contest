@@ -58,6 +58,19 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Réservé aux admins" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (action === "cleanup-deleted") {
+      const { data: profiles } = await adminClient.from("profiles").select("id");
+      let deletedCount = 0;
+      for (const profile of profiles || []) {
+        const { data } = await adminClient.auth.admin.getUserById(profile.id);
+        if (!data.user) {
+          await deleteProfileRows(profile.id);
+          deletedCount += 1;
+        }
+      }
+      return new Response(JSON.stringify({ ok: true, deletedCount }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const targetUserId = body.targetUserId as string;
     if (!targetUserId) {
       return new Response(JSON.stringify({ error: "Utilisateur manquant" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
