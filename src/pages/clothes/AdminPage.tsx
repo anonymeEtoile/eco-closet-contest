@@ -180,14 +180,64 @@ const AdminPage: React.FC = () => {
   };
 
   const saveEdit = async (userId: string) => {
-    await supabase.from('profiles').update({
+    const { error: profileError } = await supabase.from('profiles').update({
       prenom: editForm.prenom,
       nom: editForm.nom.toUpperCase(),
       classe: editForm.classe,
+      email: editForm.email.trim().toLowerCase(),
     }).eq('id', userId);
+
+    if (profileError) {
+      toast({ title: 'Erreur', description: profileError.message, variant: 'destructive' });
+      return;
+    }
+
+    if (editForm.email.trim()) {
+      const { error } = await supabase.functions.invoke('admin-user', {
+        body: { action: 'update-email', targetUserId: userId, email: editForm.email.trim() },
+      });
+      if (error) {
+        toast({ title: 'Erreur email', description: error.message, variant: 'destructive' });
+        return;
+      }
+    }
+
+    if (editForm.password.trim()) {
+      const { error } = await supabase.functions.invoke('admin-user', {
+        body: { action: 'update-password', targetUserId: userId, password: editForm.password.trim() },
+      });
+      if (error) {
+        toast({ title: 'Erreur mot de passe', description: error.message, variant: 'destructive' });
+        return;
+      }
+    }
+
     setEditingUser(null);
     fetchUsers();
     toast({ title: 'Profil mis à jour' });
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Supprimer définitivement ce compte ?')) return;
+    const { error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'delete-user', targetUserId: userId },
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchUsers();
+    toast({ title: 'Compte supprimé' });
+  };
+
+  const cleanupDeletedAccounts = async () => {
+    const { error } = await supabase.rpc('cleanup_orphan_profiles');
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchUsers();
+    toast({ title: 'Comptes supprimés nettoyés' });
   };
 
   const changeRole = async (userId: string, newRole: string) => {
@@ -205,6 +255,9 @@ const AdminPage: React.FC = () => {
       point_collecte_date: eventSettings.point_collecte_date || null,
       lieux_depot: eventSettings.lieux_depot,
       instructions_remise: eventSettings.instructions_remise,
+      reservation_salle: eventSettings.reservation_salle,
+      reservation_date: eventSettings.reservation_date || null,
+      reservation_heure: eventSettings.reservation_heure || null,
     }).neq('id', '00000000-0000-0000-0000-000000000000');
     setSavingSettings(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); }
