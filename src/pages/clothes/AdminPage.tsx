@@ -122,16 +122,21 @@ const AdminPage: React.FC = () => {
   const fetchEventSettings = async () => {
     const { data } = await supabase.from('event_settings').select('*').single();
     if (data) {
+      const settingsData = data as typeof data & {
+        reservation_salle?: string | null;
+        reservation_date?: string | null;
+        reservation_heure?: string | null;
+      };
       setEventSettings({
-        presentation_text: data.presentation_text || '',
-        semaine_collecte_start: data.semaine_collecte_start || '',
-        semaine_collecte_end: data.semaine_collecte_end || '',
-        point_collecte_date: data.point_collecte_date || '',
-        lieux_depot: data.lieux_depot || [],
-        instructions_remise: data.instructions_remise || '',
-        reservation_salle: data.reservation_salle || '',
-        reservation_date: data.reservation_date || '',
-        reservation_heure: data.reservation_heure || '',
+        presentation_text: settingsData.presentation_text || '',
+        semaine_collecte_start: settingsData.semaine_collecte_start || '',
+        semaine_collecte_end: settingsData.semaine_collecte_end || '',
+        point_collecte_date: settingsData.point_collecte_date || '',
+        lieux_depot: settingsData.lieux_depot || [],
+        instructions_remise: settingsData.instructions_remise || '',
+        reservation_salle: settingsData.reservation_salle || '',
+        reservation_date: settingsData.reservation_date || '',
+        reservation_heure: settingsData.reservation_heure || '',
       });
     }
   };
@@ -256,7 +261,7 @@ const AdminPage: React.FC = () => {
       reservation_salle: eventSettings.reservation_salle,
       reservation_date: eventSettings.reservation_date || null,
       reservation_heure: eventSettings.reservation_heure || null,
-    }).neq('id', '00000000-0000-0000-0000-000000000000');
+    } as never).neq('id', '00000000-0000-0000-0000-000000000000');
     setSavingSettings(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); }
     else { toast({ title: 'Paramètres sauvegardés !' }); }
