@@ -315,6 +315,7 @@ const AdminPage: React.FC = () => {
               {[
                 { key: 'en_attente' as const, label: 'En attente' },
                 { key: 'en_ligne' as const, label: 'Validées' },
+                { key: 'reserve' as const, label: 'Réservées' },
               ].map((status) => (
                 <button
                   key={status.key}
@@ -400,6 +401,9 @@ const AdminPage: React.FC = () => {
         {/* Users */}
         {section === 'users' && (
           <div className="space-y-3">
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={cleanupDeletedAccounts}>
+              <RotateCcw size={14} /> Nettoyer les comptes déjà supprimés
+            </Button>
             {users.map(u => (
               <div key={u.id} className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
                 {editingUser === u.id ? (
@@ -419,6 +423,14 @@ const AdminPage: React.FC = () => {
                       <div className="mt-1">
                         <ClassSelector value={editForm.classe} onChange={v => setEditForm(f => ({ ...f, classe: v }))} />
                       </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Email</label>
+                      <Input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className="mt-1 h-8 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Nouveau mot de passe</label>
+                      <Input type="password" value={editForm.password} onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))} className="mt-1 h-8 text-sm" placeholder="Laisser vide pour ne pas changer" />
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" className="flex-1 gap-1" onClick={() => saveEdit(u.id)}>
@@ -477,6 +489,12 @@ const AdminPage: React.FC = () => {
                         )}
                       >
                         {u.suspended ? <><RotateCcw size={12} /> Réactiver</> : <><ShieldOff size={12} /> Suspendre</>}
+                      </button>
+                      <button
+                        onClick={() => deleteUser(u.id)}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                      >
+                        <UserX size={12} /> Supprimer
                       </button>
                     </div>
                   </>
