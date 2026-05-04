@@ -115,7 +115,11 @@ const AdminPage: React.FC = () => {
     const { data: roles } = await supabase.from('user_roles').select('user_id, role');
     const roleMap: Record<string, string> = {};
     (roles || []).forEach((r: { user_id: string; role: string }) => { roleMap[r.user_id] = r.role; });
-    const merged = (profiles || []).map((p: UserProfile) => ({ ...p, role: roleMap[p.id] || 'eleve' }));
+    const checkedProfiles = await Promise.all((profiles || []).map(async (p: UserProfile) => {
+      const { data: exists } = await supabase.rpc('profile_has_auth_user', { _user_id: p.id });
+      return exists ? { ...p, role: roleMap[p.id] || 'eleve' } : null;
+    }));
+    const merged = checkedProfiles.filter(Boolean) as UserProfile[];
     setUsers(merged as UserProfile[]);
   };
 
@@ -129,6 +133,9 @@ const AdminPage: React.FC = () => {
         point_collecte_date: data.point_collecte_date || '',
         lieux_depot: data.lieux_depot || [],
         instructions_remise: data.instructions_remise || '',
+        reservation_salle: data.reservation_salle || '',
+        reservation_date: data.reservation_date || '',
+        reservation_heure: data.reservation_heure || '',
       });
     }
   };
@@ -169,7 +176,7 @@ const AdminPage: React.FC = () => {
 
   const startEdit = (u: UserProfile) => {
     setEditingUser(u.id);
-    setEditForm({ prenom: u.prenom, nom: u.nom, classe: u.classe });
+    setEditForm({ prenom: u.prenom, nom: u.nom, classe: u.classe, email: u.email, password: '' });
   };
 
   const saveEdit = async (userId: string) => {
