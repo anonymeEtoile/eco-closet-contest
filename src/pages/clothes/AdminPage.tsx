@@ -142,7 +142,7 @@ const AdminPage: React.FC = () => {
   };
 
   useEffect(() => { if (section === 'moderation') fetchPending(); }, [section, moderationStatus]);
-  useEffect(() => { if (section === 'users') fetchUsers(); }, [section]);
+  useEffect(() => { if (section === 'users') cleanupDeletedAccounts(false); }, [section]);
   useEffect(() => { if (section === 'settings') fetchEventSettings(); }, [section]);
 
   const validate = async (id: string) => {
@@ -231,7 +231,7 @@ const AdminPage: React.FC = () => {
     toast({ title: 'Compte supprimé' });
   };
 
-  const cleanupDeletedAccounts = async () => {
+  const cleanupDeletedAccounts = async (showToast = true) => {
     const { error } = await supabase.functions.invoke('admin-user', {
       body: { action: 'cleanup-deleted' },
     });
@@ -240,7 +240,7 @@ const AdminPage: React.FC = () => {
       return;
     }
     fetchUsers();
-    toast({ title: 'Comptes supprimés nettoyés' });
+    if (showToast) toast({ title: 'Comptes supprimés nettoyés' });
   };
 
   const changeRole = async (userId: string, newRole: string) => {
