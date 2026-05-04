@@ -235,11 +235,19 @@ const AdminPage: React.FC = () => {
     const { error } = await supabase.functions.invoke('admin-user', {
       body: { action: 'cleanup-deleted' },
     });
+    
+    // Always fetch users regardless of edge function success
+    fetchUsers();
+
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      if (showToast) {
+        toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      } else {
+        console.error('Erreur cleanup-deleted:', error);
+      }
       return;
     }
-    fetchUsers();
+    
     if (showToast) toast({ title: 'Comptes supprimés nettoyés' });
   };
 
