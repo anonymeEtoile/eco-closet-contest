@@ -325,7 +325,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_orphan_profiles: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -333,7 +332,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      profile_has_auth_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "eleve" | "moderateur" | "super_admin"
