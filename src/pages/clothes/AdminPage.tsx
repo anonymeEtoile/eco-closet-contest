@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import ThemeToggle from '@/components/ThemeToggle';
-import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, KeyRound, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -41,10 +41,10 @@ const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refusMotif, setRefusMotif] = useState<Record<string, string>>({});
   const [section, setSection] = useState<'moderation' | 'users' | 'settings'>('moderation');
-  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'en_ligne'>('en_attente');
+  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'en_ligne' | 'reserve'>('en_attente');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [editingUser, setEditingUser] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ prenom: string; nom: string; classe: string }>({ prenom: '', nom: '', classe: '' });
+  const [editForm, setEditForm] = useState<{ prenom: string; nom: string; classe: string; email: string; password: string }>({ prenom: '', nom: '', classe: '', email: '', password: '' });
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   // Event settings state
@@ -55,6 +55,9 @@ const AdminPage: React.FC = () => {
     point_collecte_date: '',
     lieux_depot: [] as string[],
     instructions_remise: '',
+    reservation_salle: '',
+    reservation_date: '',
+    reservation_heure: '',
   });
   const [newLieu, setNewLieu] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
