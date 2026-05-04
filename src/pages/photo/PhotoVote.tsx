@@ -23,6 +23,7 @@ const PhotoVote: React.FC = () => {
   const [myVote, setMyVote] = useState<string | null>(null);
   const [votesActive, setVotesActive] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [voting, setVoting] = useState<string | null>(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const PhotoVote: React.FC = () => {
       const [settingsRes, photosRes, voteRes] = await Promise.all([
         supabase.from('contest_settings').select('votes_actifs').single(),
         supabase.from('contest_photos').select('*').eq('status', 'validee').eq('banned', false),
-        user ? supabase.from('contest_votes').select('photo_id').eq('voter_id', user.id).single() : Promise.resolve({ data: null }),
+        user ? supabase.from('contest_votes').select('photo_id').eq('voter_id', user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
 
       setVotesActive(settingsRes.data?.votes_actifs || false);
@@ -77,19 +78,31 @@ const PhotoVote: React.FC = () => {
   }, [user]);
 
   const vote = async (photoId: string) => {
-    if (!user || !votesActive) return;
+    if (!user || !votesActive || voting) return;
+    if (myVote === photoId) {
+      toast({ title: 'Vote déjà enregistré' });
+      return;
+    }
     if (photos.find(p => p.id === photoId)?.user_id === user.id) {
       toast({ title: 'Vous ne pouvez pas voter pour votre propre photo', variant: 'destructive' }); return;
     }
+    setVoting(photoId);
+    const previousVote = myVote;
+    let error;
     if (myVote) {
-      await supabase.from('contest_votes').update({ photo_id: photoId }).eq('voter_id', user.id);
+      ({ error } = await supabase.from('contest_votes').update({ photo_id: photoId }).eq('voter_id', user.id));
     } else {
-      await supabase.from('contest_votes').insert({ voter_id: user.id, photo_id: photoId });
+      ({ error } = await supabase.from('contest_votes').insert({ voter_id: user.id, photo_id: photoId }));
+    }
+    setVoting(null);
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
     }
     setMyVote(photoId);
     setPhotos(p => p.map(ph => ({
       ...ph,
-      vote_count: ph.id === photoId ? (ph.vote_count || 0) + 1 : ph.id === myVote ? (ph.vote_count || 1) - 1 : ph.vote_count,
+      vote_count: ph.id === photoId ? (ph.vote_count || 0) + 1 : ph.id === previousVote ? Math.max((ph.vote_count || 1) - 1, 0) : ph.vote_count,
     })));
     toast({ title: 'Vote enregistré !' });
   };
@@ -121,6 +134,7 @@ const PhotoVote: React.FC = () => {
                 {votesActive && (
                   <button
                     onClick={() => vote(p.id)}
+                    disabled={voting === p.id}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all",
                       myVote === p.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
