@@ -122,6 +122,9 @@ export type Database = {
           lieux_depot: string[]
           point_collecte_date: string | null
           presentation_text: string
+          reservation_date: string | null
+          reservation_heure: string | null
+          reservation_salle: string
           semaine_collecte_end: string | null
           semaine_collecte_start: string | null
           updated_at: string
@@ -132,6 +135,9 @@ export type Database = {
           lieux_depot?: string[]
           point_collecte_date?: string | null
           presentation_text?: string
+          reservation_date?: string | null
+          reservation_heure?: string | null
+          reservation_salle?: string
           semaine_collecte_end?: string | null
           semaine_collecte_start?: string | null
           updated_at?: string
@@ -142,6 +148,9 @@ export type Database = {
           lieux_depot?: string[]
           point_collecte_date?: string | null
           presentation_text?: string
+          reservation_date?: string | null
+          reservation_heure?: string | null
+          reservation_salle?: string
           semaine_collecte_end?: string | null
           semaine_collecte_start?: string | null
           updated_at?: string

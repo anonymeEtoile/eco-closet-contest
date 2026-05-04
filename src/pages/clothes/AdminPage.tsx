@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import ThemeToggle from '@/components/ThemeToggle';
-import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -41,10 +41,10 @@ const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refusMotif, setRefusMotif] = useState<Record<string, string>>({});
   const [section, setSection] = useState<'moderation' | 'users' | 'settings'>('moderation');
-  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'en_ligne'>('en_attente');
+  const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'en_ligne' | 'reserve'>('en_attente');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [editingUser, setEditingUser] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ prenom: string; nom: string; classe: string }>({ prenom: '', nom: '', classe: '' });
+  const [editForm, setEditForm] = useState<{ prenom: string; nom: string; classe: string; email: string; password: string }>({ prenom: '', nom: '', classe: '', email: '', password: '' });
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   // Event settings state
@@ -55,6 +55,9 @@ const AdminPage: React.FC = () => {
     point_collecte_date: '',
     lieux_depot: [] as string[],
     instructions_remise: '',
+    reservation_salle: '',
+    reservation_date: '',
+    reservation_heure: '',
   });
   const [newLieu, setNewLieu] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
@@ -119,19 +122,27 @@ const AdminPage: React.FC = () => {
   const fetchEventSettings = async () => {
     const { data } = await supabase.from('event_settings').select('*').single();
     if (data) {
+      const settingsData = data as typeof data & {
+        reservation_salle?: string | null;
+        reservation_date?: string | null;
+        reservation_heure?: string | null;
+      };
       setEventSettings({
-        presentation_text: data.presentation_text || '',
-        semaine_collecte_start: data.semaine_collecte_start || '',
-        semaine_collecte_end: data.semaine_collecte_end || '',
-        point_collecte_date: data.point_collecte_date || '',
-        lieux_depot: data.lieux_depot || [],
-        instructions_remise: data.instructions_remise || '',
+        presentation_text: settingsData.presentation_text || '',
+        semaine_collecte_start: settingsData.semaine_collecte_start || '',
+        semaine_collecte_end: settingsData.semaine_collecte_end || '',
+        point_collecte_date: settingsData.point_collecte_date || '',
+        lieux_depot: settingsData.lieux_depot || [],
+        instructions_remise: settingsData.instructions_remise || '',
+        reservation_salle: settingsData.reservation_salle || '',
+        reservation_date: settingsData.reservation_date || '',
+        reservation_heure: settingsData.reservation_heure || '',
       });
     }
   };
 
   useEffect(() => { if (section === 'moderation') fetchPending(); }, [section, moderationStatus]);
-  useEffect(() => { if (section === 'users') fetchUsers(); }, [section]);
+  useEffect(() => { if (section === 'users') cleanupDeletedAccounts(false); }, [section]);
   useEffect(() => { if (section === 'settings') fetchEventSettings(); }, [section]);
 
   const validate = async (id: string) => {
@@ -166,18 +177,70 @@ const AdminPage: React.FC = () => {
 
   const startEdit = (u: UserProfile) => {
     setEditingUser(u.id);
-    setEditForm({ prenom: u.prenom, nom: u.nom, classe: u.classe });
+    setEditForm({ prenom: u.prenom, nom: u.nom, classe: u.classe, email: u.email, password: '' });
   };
 
   const saveEdit = async (userId: string) => {
-    await supabase.from('profiles').update({
+    const { error: profileError } = await supabase.from('profiles').update({
       prenom: editForm.prenom,
       nom: editForm.nom.toUpperCase(),
       classe: editForm.classe,
+      email: editForm.email.trim().toLowerCase(),
     }).eq('id', userId);
+
+    if (profileError) {
+      toast({ title: 'Erreur', description: profileError.message, variant: 'destructive' });
+      return;
+    }
+
+    if (editForm.email.trim()) {
+      const { error } = await supabase.functions.invoke('admin-user', {
+        body: { action: 'update-email', targetUserId: userId, email: editForm.email.trim() },
+      });
+      if (error) {
+        toast({ title: 'Erreur email', description: error.message, variant: 'destructive' });
+        return;
+      }
+    }
+
+    if (editForm.password.trim()) {
+      const { error } = await supabase.functions.invoke('admin-user', {
+        body: { action: 'update-password', targetUserId: userId, password: editForm.password.trim() },
+      });
+      if (error) {
+        toast({ title: 'Erreur mot de passe', description: error.message, variant: 'destructive' });
+        return;
+      }
+    }
+
     setEditingUser(null);
     fetchUsers();
     toast({ title: 'Profil mis à jour' });
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Supprimer définitivement ce compte ?')) return;
+    const { error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'delete-user', targetUserId: userId },
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchUsers();
+    toast({ title: 'Compte supprimé' });
+  };
+
+  const cleanupDeletedAccounts = async (showToast = true) => {
+    const { error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'cleanup-deleted' },
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    fetchUsers();
+    if (showToast) toast({ title: 'Comptes supprimés nettoyés' });
   };
 
   const changeRole = async (userId: string, newRole: string) => {
@@ -195,7 +258,10 @@ const AdminPage: React.FC = () => {
       point_collecte_date: eventSettings.point_collecte_date || null,
       lieux_depot: eventSettings.lieux_depot,
       instructions_remise: eventSettings.instructions_remise,
-    }).neq('id', '00000000-0000-0000-0000-000000000000');
+      reservation_salle: eventSettings.reservation_salle,
+      reservation_date: eventSettings.reservation_date || null,
+      reservation_heure: eventSettings.reservation_heure || null,
+    } as never).neq('id', '00000000-0000-0000-0000-000000000000');
     setSavingSettings(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); }
     else { toast({ title: 'Paramètres sauvegardés !' }); }
@@ -252,6 +318,7 @@ const AdminPage: React.FC = () => {
               {[
                 { key: 'en_attente' as const, label: 'En attente' },
                 { key: 'en_ligne' as const, label: 'Validées' },
+                { key: 'reserve' as const, label: 'Réservées' },
               ].map((status) => (
                 <button
                   key={status.key}
@@ -337,6 +404,9 @@ const AdminPage: React.FC = () => {
         {/* Users */}
         {section === 'users' && (
           <div className="space-y-3">
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => cleanupDeletedAccounts()}>
+              <RotateCcw size={14} /> Nettoyer les comptes déjà supprimés
+            </Button>
             {users.map(u => (
               <div key={u.id} className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
                 {editingUser === u.id ? (
@@ -356,6 +426,14 @@ const AdminPage: React.FC = () => {
                       <div className="mt-1">
                         <ClassSelector value={editForm.classe} onChange={v => setEditForm(f => ({ ...f, classe: v }))} />
                       </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Email</label>
+                      <Input value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className="mt-1 h-8 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Nouveau mot de passe</label>
+                      <Input type="password" value={editForm.password} onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))} className="mt-1 h-8 text-sm" placeholder="Laisser vide pour ne pas changer" />
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" className="flex-1 gap-1" onClick={() => saveEdit(u.id)}>
@@ -415,6 +493,12 @@ const AdminPage: React.FC = () => {
                       >
                         {u.suspended ? <><RotateCcw size={12} /> Réactiver</> : <><ShieldOff size={12} /> Suspendre</>}
                       </button>
+                      <button
+                        onClick={() => deleteUser(u.id)}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                      >
+                        <UserX size={12} /> Supprimer
+                      </button>
                     </div>
                   </>
                 )}
@@ -459,6 +543,20 @@ const AdminPage: React.FC = () => {
                   rows={2}
                   className="mt-1.5 w-full resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="text-sm font-medium">Salle de retrait</label>
+                  <Input value={eventSettings.reservation_salle} onChange={e => setEventSettings(s => ({ ...s, reservation_salle: e.target.value }))} className="mt-1.5" placeholder="Salle A101" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Jour de retrait</label>
+                  <Input type="date" value={eventSettings.reservation_date} onChange={e => setEventSettings(s => ({ ...s, reservation_date: e.target.value }))} className="mt-1.5" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Heure de retrait</label>
+                  <Input type="time" value={eventSettings.reservation_heure} onChange={e => setEventSettings(s => ({ ...s, reservation_heure: e.target.value }))} className="mt-1.5" />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">Lieux de dépôt</label>

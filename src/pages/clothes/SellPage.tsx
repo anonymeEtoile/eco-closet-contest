@@ -135,7 +135,6 @@ const SellPage: React.FC = () => {
             type="file"
             accept="image/*"
             multiple
-            capture="environment"
             className="hidden"
             onChange={e => addPhotos(e.target.files)}
           />
