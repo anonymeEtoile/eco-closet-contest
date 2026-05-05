@@ -24,6 +24,7 @@ const SellPage: React.FC = () => {
   const [photos, setPhotos] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [form, setForm] = useState({
     title: '',
     taille: '',
@@ -78,7 +79,8 @@ const SellPage: React.FC = () => {
         description: form.description.trim() || null,
         photos: photoKeys,
         status: 'en_attente',
-      });
+        is_anonymous: isAnonymous,
+      } as never);
 
       if (error) throw error;
       toast({ title: 'Annonce soumise !', description: 'Elle sera visible après validation.' });
@@ -237,6 +239,24 @@ const SellPage: React.FC = () => {
             rows={3}
             className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
           />
+        </div>
+
+        {/* Anonymat */}
+        <div className="rounded-xl border border-border bg-muted/30 p-3">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAnonymous}
+              onChange={e => setIsAnonymous(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-primary"
+            />
+            <div>
+              <p className="text-sm font-medium">Don anonyme</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Votre prénom et classe ne seront pas affichés publiquement. Les organisateurs verront votre identité pour la remise du vêtement.
+              </p>
+            </div>
+          </label>
         </div>
 
         <Button type="submit" className="w-full gap-2 py-6 text-base font-semibold" disabled={loading}>

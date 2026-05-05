@@ -21,10 +21,6 @@ const Landing: React.FC = () => {
   const [settings, setSettings] = useState<EventSettings | null>(null);
 
   useEffect(() => {
-    if (user) navigate('/app');
-  }, [user, navigate]);
-
-  useEffect(() => {
     supabase.from('event_settings').select('*').single().then(({ data }) => {
       if (data) setSettings(data as EventSettings);
     });
@@ -116,20 +112,32 @@ const Landing: React.FC = () => {
       {/* CTA */}
       <section className="px-6 pb-10">
         <div className="mx-auto max-w-lg space-y-3">
-          <Button
-            className="w-full gap-2 py-6 text-base font-semibold"
-            onClick={() => navigate('/auth')}
-          >
-            Se connecter
-            <ArrowRight size={18} />
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full gap-2 py-6 text-base"
-            onClick={() => navigate('/auth?tab=signup')}
-          >
-            Créer un compte élève
-          </Button>
+          {user ? (
+            <Button
+              className="w-full gap-2 py-6 text-base font-semibold"
+              onClick={() => navigate('/app')}
+            >
+              Accéder à l'application
+              <ArrowRight size={18} />
+            </Button>
+          ) : (
+            <>
+              <Button
+                className="w-full gap-2 py-6 text-base font-semibold"
+                onClick={() => navigate('/auth')}
+              >
+                Se connecter
+                <ArrowRight size={18} />
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2 py-6 text-base"
+                onClick={() => navigate('/auth?tab=signup')}
+              >
+                Créer un compte élève
+              </Button>
+            </>
+          )}
         </div>
       </section>
     </div>
