@@ -25,6 +25,7 @@ interface ListingDetail {
   photos: string[];
   status: string;
   seller_id: string;
+  is_anonymous?: boolean;
   created_at: string;
   seller?: { prenom: string; classe: string };
 }
@@ -32,7 +33,7 @@ interface ListingDetail {
 const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, role } = useApp();
   const { toast } = useToast();
 
   const [listing, setListing] = useState<ListingDetail | null>(null);
@@ -122,6 +123,26 @@ const ListingDetailPage: React.FC = () => {
       toast({ title: 'Réservé !' });
     } else {
       toast({ title: 'Déjà réservé', description: error.message, variant: 'destructive' });
+    }
+    setReserving(false);
+  };
+
+  const cancelReservation = async () => {
+    if (!user || !listing) return;
+    if (!confirm('Annuler votre réservation ?')) return;
+    setReserving(true);
+    const { error } = await supabase
+      .from('reservations')
+      .delete()
+      .eq('listing_id', listing.id)
+      .eq('buyer_id', user.id);
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+    } else {
+      await supabase.from('listings').update({ status: 'en_ligne' }).eq('id', listing.id);
+      setReserved(false);
+      setListing({ ...listing, status: 'en_ligne' });
+      toast({ title: 'Réservation annulée' });
     }
     setReserving(false);
   };
@@ -225,44 +246,84 @@ const ListingDetailPage: React.FC = () => {
         )}
 
         {/* Seller */}
-        {listing.seller && (
-          <div className="flex items-center gap-3 rounded-xl bg-secondary p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
-              {listing.seller.prenom[0]}
-            </div>
-            <div>
-              <p className="text-sm font-semibold">{listing.seller.prenom}</p>
-              <p className="text-xs text-muted-foreground">{listing.seller.classe}</p>
-            </div>
-            <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar size={12} />
-              {format(new Date(listing.created_at), 'd MMM yyyy', { locale: fr })}
-            </div>
-          </div>
-        )}
+        {(() => {
+          const isAdmin = role === 'moderateur' || role === 'super_admin';
+          const isOwner = user?.id === listing.seller_id;
+          const showSeller = listing.seller && (!listing.is_anonymous || isAdmin || isOwner);
+          if (showSeller && listing.seller) {
+            return (
+              <div className="flex items-center gap-3 rounded-xl bg-secondary p-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                  {listing.seller.prenom[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">
+                    {listing.seller.prenom}
+                    {listing.is_anonymous && (isAdmin || isOwner) && (
+                      <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Anonyme</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{listing.seller.classe}</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar size={12} />
+                  {format(new Date(listing.created_at), 'd MMM yyyy', { locale: fr })}
+                </div>
+              </div>
+            );
+          }
+          if (listing.is_anonymous) {
+            return (
+              <div className="flex items-center gap-3 rounded-xl bg-secondary p-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold">
+                  ?
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Don anonyme</p>
+                  <p className="text-xs text-muted-foreground">Identité masquée</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar size={12} />
+                  {format(new Date(listing.created_at), 'd MMM yyyy', { locale: fr })}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Reserve */}
-        {listing.status === 'reserve' && (
+        {listing.status === 'reserve' && !reserved && (
           <div className="rounded-xl bg-primary/10 p-4">
             <p className="font-semibold text-primary">Ce vêtement est réservé</p>
           </div>
         )}
-        {user && listing.seller_id !== user.id && listing.status === 'en_ligne' && (
+        {user && listing.seller_id !== user.id && (
           <div className="pt-2">
             {reserved ? (
-              <div className="rounded-xl bg-primary/10 p-4">
-                <p className="font-semibold text-primary">✓ Réservé !</p>
-                <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
-                  <MapPin size={16} className="mt-0.5 flex-shrink-0 text-primary" />
-                  <p>{instructions}</p>
+              <div className="space-y-2">
+                <div className="rounded-xl bg-primary/10 p-4">
+                  <p className="font-semibold text-primary">✓ Réservé par vous</p>
+                  <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+                    <MapPin size={16} className="mt-0.5 flex-shrink-0 text-primary" />
+                    <p>{instructions}</p>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
+                  onClick={cancelReservation}
+                  disabled={reserving}
+                >
+                  Annuler la réservation
+                </Button>
               </div>
-            ) : (
+            ) : listing.status === 'en_ligne' ? (
               <Button className="w-full gap-2 py-6 text-base font-semibold" onClick={reserve} disabled={reserving}>
                 {reserving ? <Loader2 size={18} className="animate-spin" /> : null}
                 Réserver
               </Button>
-            )}
+            ) : null}
           </div>
         )}
       </div>

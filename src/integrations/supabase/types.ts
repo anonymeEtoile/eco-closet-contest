@@ -193,6 +193,7 @@ export type Database = {
           description: string | null
           etat: string | null
           id: string
+          is_anonymous: boolean
           marque: string | null
           photos: string[]
           price: number | null
@@ -210,6 +211,7 @@ export type Database = {
           description?: string | null
           etat?: string | null
           id?: string
+          is_anonymous?: boolean
           marque?: string | null
           photos?: string[]
           price?: number | null
@@ -227,6 +229,7 @@ export type Database = {
           description?: string | null
           etat?: string | null
           id?: string
+          is_anonymous?: boolean
           marque?: string | null
           photos?: string[]
           price?: number | null

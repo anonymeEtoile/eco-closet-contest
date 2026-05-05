@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import ThemeToggle from '@/components/ThemeToggle';
-import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, UserX } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldOff, Edit2, Save, X, RotateCcw, Trash2, UserX, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -229,6 +229,23 @@ const AdminPage: React.FC = () => {
     }
     fetchUsers();
     toast({ title: 'Compte supprimé' });
+  };
+
+  const resetPassword = async (userId: string, userName: string) => {
+    if (!confirm(`Générer un nouveau mot de passe temporaire pour ${userName} ?`)) return;
+    const { data, error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'reset-password', targetUserId: userId },
+    });
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const temp = (data as { tempPassword?: string })?.tempPassword;
+    if (temp) {
+      try { await navigator.clipboard.writeText(temp); } catch { /* ignore */ }
+      alert(`Nouveau mot de passe temporaire (copié) :\n\n${temp}\n\nCommuniquez-le à l'utilisateur, qui pourra le changer ensuite.`);
+      toast({ title: 'Mot de passe réinitialisé' });
+    }
   };
 
   const cleanupDeletedAccounts = async (showToast = true) => {
@@ -489,11 +506,11 @@ const AdminPage: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <button
                         onClick={() => toggleSuspend(u.id, u.suspended)}
                         className={cn(
-                          'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                          'flex flex-1 min-w-[120px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
                           u.suspended
                             ? 'bg-primary/10 text-primary hover:bg-primary/20'
                             : 'bg-destructive/10 text-destructive hover:bg-destructive/20'
@@ -502,8 +519,14 @@ const AdminPage: React.FC = () => {
                         {u.suspended ? <><RotateCcw size={12} /> Réactiver</> : <><ShieldOff size={12} /> Suspendre</>}
                       </button>
                       <button
+                        onClick={() => resetPassword(u.id, `${u.prenom} ${u.nom}`)}
+                        className="flex flex-1 min-w-[120px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                      >
+                        <KeyRound size={12} /> Reset MDP
+                      </button>
+                      <button
                         onClick={() => deleteUser(u.id)}
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                        className="flex flex-1 min-w-[120px] items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
                       >
                         <UserX size={12} /> Supprimer
                       </button>
