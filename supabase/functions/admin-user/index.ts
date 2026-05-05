@@ -1,114 +1,158 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-serve(async (req) => {
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const publishableKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const authHeader = req.headers.get("Authorization");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Non connecté" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+      console.error("Missing env", { hasUrl: !!supabaseUrl, hasAnon: !!anonKey, hasService: !!serviceRoleKey });
+      return json({ error: "Configuration serveur incomplète" }, 500);
     }
 
-    const userClient = createClient(supabaseUrl, publishableKey, {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return json({ error: "Non connecté" }, 401);
+
+    const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: userData, error: userError } = await userClient.auth.getUser();
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Session invalide" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (userError || !userData?.user) {
+      console.error("Auth error", userError);
+      return json({ error: "Session invalide" }, 401);
     }
 
-    const body = await req.json();
-    const action = body.action as string;
+    let body: Record<string, unknown> = {};
+    try {
+      body = await req.json();
+    } catch {
+      return json({ error: "Body JSON invalide" }, 400);
+    }
+
+    const action = String(body.action || "");
     const currentUserId = userData.user.id;
 
     const deleteProfileRows = async (targetUserId: string) => {
       await adminClient.from("user_roles").delete().eq("user_id", targetUserId);
+      await adminClient.from("favorites").delete().eq("user_id", targetUserId);
+      await adminClient.from("reservations").delete().eq("buyer_id", targetUserId);
+      await adminClient.from("contest_votes").delete().eq("voter_id", targetUserId);
+      await adminClient.from("contest_photos").delete().eq("user_id", targetUserId);
+      await adminClient.from("listings").delete().eq("seller_id", targetUserId);
       await adminClient.from("profiles").delete().eq("id", targetUserId);
     };
 
     if (action === "delete-self") {
-      const { error } = await adminClient.auth.admin.deleteUser(currentUserId);
-      if (error) throw error;
       await deleteProfileRows(currentUserId);
-      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const { error } = await adminClient.auth.admin.deleteUser(currentUserId);
+      if (error && !error.message.toLowerCase().includes("not found")) {
+        console.error("delete-self error", error);
+        throw error;
+      }
+      return json({ ok: true });
     }
 
-    const { data: roleRow } = await adminClient
+    // From here, must be super_admin
+    const { data: roleRow, error: roleError } = await adminClient
       .from("user_roles")
       .select("role")
       .eq("user_id", currentUserId)
       .eq("role", "super_admin")
       .maybeSingle();
 
-    if (!roleRow) {
-      return new Response(JSON.stringify({ error: "Réservé aux admins" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (roleError) {
+      console.error("Role check error", roleError);
+      return json({ error: "Erreur vérification rôle" }, 500);
     }
+    if (!roleRow) return json({ error: "Réservé aux super admins" }, 403);
 
     if (action === "cleanup-deleted") {
-      const { data: profiles } = await adminClient.from("profiles").select("id");
+      const { data: profiles, error: pErr } = await adminClient.from("profiles").select("id");
+      if (pErr) {
+        console.error("Cleanup fetch profiles error", pErr);
+        return json({ error: pErr.message }, 500);
+      }
       let deletedCount = 0;
       for (const profile of profiles || []) {
-        const { data } = await adminClient.auth.admin.getUserById(profile.id);
-        if (!data.user) {
-          await deleteProfileRows(profile.id);
-          deletedCount += 1;
+        try {
+          const { data, error } = await adminClient.auth.admin.getUserById(profile.id);
+          if (error || !data?.user) {
+            await deleteProfileRows(profile.id);
+            deletedCount += 1;
+          }
+        } catch (e) {
+          console.error("Cleanup loop error for", profile.id, e);
         }
       }
-      return new Response(JSON.stringify({ ok: true, deletedCount }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ ok: true, deletedCount });
     }
 
-    const targetUserId = body.targetUserId as string;
-    if (!targetUserId) {
-      return new Response(JSON.stringify({ error: "Utilisateur manquant" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const targetUserId = String(body.targetUserId || "");
+    if (!targetUserId) return json({ error: "Utilisateur manquant" }, 400);
 
     if (action === "delete-user") {
-      const { error } = await adminClient.auth.admin.deleteUser(targetUserId);
-      if (error && !error.message.toLowerCase().includes("not found")) throw error;
       await deleteProfileRows(targetUserId);
-      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const { error } = await adminClient.auth.admin.deleteUser(targetUserId);
+      if (error && !error.message.toLowerCase().includes("not found")) {
+        console.error("delete-user error", error);
+        throw error;
+      }
+      return json({ ok: true });
     }
 
     if (action === "update-password") {
       const password = String(body.password || "");
-      if (password.length < 6) {
-        return new Response(JSON.stringify({ error: "Mot de passe trop court" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
+      if (password.length < 6) return json({ error: "Mot de passe trop court (min 6)" }, 400);
       const { error } = await adminClient.auth.admin.updateUserById(targetUserId, { password });
       if (error) throw error;
-      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ ok: true });
     }
 
     if (action === "update-email") {
       const email = String(body.email || "").trim().toLowerCase();
-      if (!email.includes("@")) {
-        return new Response(JSON.stringify({ error: "Email invalide" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      const { error } = await adminClient.auth.admin.updateUserById(targetUserId, { email, email_confirm: true });
+      if (!email.includes("@")) return json({ error: "Email invalide" }, 400);
+      const { error } = await adminClient.auth.admin.updateUserById(targetUserId, {
+        email,
+        email_confirm: true,
+      });
       if (error) throw error;
       await adminClient.from("profiles").update({ email }).eq("id", targetUserId);
-      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ ok: true });
     }
 
-    return new Response(JSON.stringify({ error: "Action inconnue" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (action === "reset-password") {
+      // Generate a temporary password and return it to the admin
+      const temp = `Tmp-${Math.random().toString(36).slice(2, 10)}!`;
+      const { error } = await adminClient.auth.admin.updateUserById(targetUserId, { password: temp });
+      if (error) throw error;
+      return json({ ok: true, tempPassword: temp });
+    }
+
+    return json({ error: `Action inconnue: ${action}` }, 400);
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erreur serveur" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("Edge function fatal", error);
+    return json(
+      { error: error instanceof Error ? error.message : "Erreur serveur" },
+      500,
+    );
   }
 });
