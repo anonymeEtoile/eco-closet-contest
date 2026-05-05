@@ -17,6 +17,7 @@ import SearchPage from "./pages/clothes/SearchPage";
 import SellPage from "./pages/clothes/SellPage";
 import ListingDetailPage from "./pages/clothes/ListingDetailPage";
 import MyListingsPage from "./pages/clothes/MyListingsPage";
+import MyReservationsPage from "./pages/clothes/MyReservationsPage";
 import ProfilePage from "./pages/clothes/ProfilePage";
 import AdminPage from "./pages/clothes/AdminPage";
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/app/vendre" element={<ProtectedRoute><SellPage /></ProtectedRoute>} />
               <Route path="/app/annonce/:id" element={<ProtectedRoute><ListingDetailPage /></ProtectedRoute>} />
               <Route path="/app/mes-annonces" element={<ProtectedRoute><MyListingsPage /></ProtectedRoute>} />
+              <Route path="/app/mes-reservations" element={<ProtectedRoute><MyReservationsPage /></ProtectedRoute>} />
               <Route path="/app/profil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/app/admin" element={<ProtectedRoute requireRole="moderateur"><AdminPage /></ProtectedRoute>} />
 

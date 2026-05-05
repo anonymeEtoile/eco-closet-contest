@@ -5,7 +5,7 @@ import { useApp } from '@/contexts/AppContext';
 import BottomNav from '@/components/BottomNav';
 import ModeFab from '@/components/ModeFab';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Heart, Lock, Trash2, LogOut, ChevronRight } from 'lucide-react';
+import { Heart, Lock, Trash2, LogOut, ChevronRight, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -181,6 +181,19 @@ const ProfilePage: React.FC = () => {
               <Heart size={18} className="text-primary" />
             </div>
             <span className="font-medium">Mes favoris</span>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground" />
+        </button>
+
+        <button
+          onClick={() => navigate('/app/mes-reservations')}
+          className="flex w-full items-center justify-between rounded-xl border border-border bg-card p-4 shadow-card"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+              <ShoppingBag size={18} className="text-primary" />
+            </div>
+            <span className="font-medium">Mes réservations</span>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
