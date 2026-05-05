@@ -25,6 +25,7 @@ interface ListingDetail {
   photos: string[];
   status: string;
   seller_id: string;
+  is_anonymous?: boolean;
   created_at: string;
   seller?: { prenom: string; classe: string };
 }
@@ -32,7 +33,7 @@ interface ListingDetail {
 const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, role } = useApp();
   const { toast } = useToast();
 
   const [listing, setListing] = useState<ListingDetail | null>(null);
@@ -122,6 +123,26 @@ const ListingDetailPage: React.FC = () => {
       toast({ title: 'Réservé !' });
     } else {
       toast({ title: 'Déjà réservé', description: error.message, variant: 'destructive' });
+    }
+    setReserving(false);
+  };
+
+  const cancelReservation = async () => {
+    if (!user || !listing) return;
+    if (!confirm('Annuler votre réservation ?')) return;
+    setReserving(true);
+    const { error } = await supabase
+      .from('reservations')
+      .delete()
+      .eq('listing_id', listing.id)
+      .eq('buyer_id', user.id);
+    if (error) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+    } else {
+      await supabase.from('listings').update({ status: 'en_ligne' }).eq('id', listing.id);
+      setReserved(false);
+      setListing({ ...listing, status: 'en_ligne' });
+      toast({ title: 'Réservation annulée' });
     }
     setReserving(false);
   };
