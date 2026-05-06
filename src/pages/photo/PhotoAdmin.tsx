@@ -105,8 +105,31 @@ const PhotoAdmin: React.FC = () => {
     if (data) setSettings(data as ContestSettings);
   };
 
-  useEffect(() => { if (section === 'moderation') fetchPhotos(); }, [section, moderationStatus]);
+  useEffect(() => { if (section === 'moderation') { fetchPhotos(); fetchTags(); } }, [section, moderationStatus]);
   useEffect(() => { if (section === 'settings') fetchSettings(); }, [section]);
+  useEffect(() => { if (section === 'tags') fetchTags(); }, [section]);
+
+  const updatePhotoTag = async (photoId: string, newTagId: string) => {
+    const { error } = await supabase.from('contest_photos').update({ tag_id: newTagId } as never).eq('id', photoId);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    fetchPhotos();
+    toast({ title: 'Catégorie mise à jour' });
+  };
+
+  const addTag = async () => {
+    if (!newTag.trim()) return;
+    const { error } = await supabase.from('contest_tags' as never).insert({ label: newTag.trim() } as never);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    setNewTag('');
+    fetchTags();
+  };
+
+  const removeTag = async (id: string) => {
+    if (!confirm('Supprimer ce tag ? Les photos associées perdront leur catégorie.')) return;
+    const { error } = await supabase.from('contest_tags' as never).delete().eq('id', id);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    fetchTags();
+  };
 
   const validate = async (id: string) => {
     await supabase.from('contest_photos').update({ status: 'validee' }).eq('id', id);
