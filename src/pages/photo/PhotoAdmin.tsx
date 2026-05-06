@@ -16,8 +16,11 @@ interface ContestPhoto {
   photo_url: string;
   status: string;
   banned: boolean;
+  tag_id: string | null;
   author?: { prenom: string; nom: string; classe: string };
 }
+
+interface Tag { id: string; label: string }
 
 interface ContestSettings {
   id: string;
@@ -36,11 +39,18 @@ const PhotoAdmin: React.FC = () => {
   const [photos, setPhotos] = useState<ContestPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [motifs, setMotifs] = useState<Record<string, string>>({});
-  const [section, setSection] = useState<'moderation' | 'settings'>('moderation');
+  const [section, setSection] = useState<'moderation' | 'settings' | 'tags'>('moderation');
   const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'validee'>('en_attente');
   const [settings, setSettings] = useState<ContestSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [newTag, setNewTag] = useState('');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  const fetchTags = async () => {
+    const { data } = await supabase.from('contest_tags' as never).select('*').order('label');
+    setTags((data as Tag[]) || []);
+  };
 
   const fetchPhotos = async () => {
     setLoading(true);
@@ -95,8 +105,31 @@ const PhotoAdmin: React.FC = () => {
     if (data) setSettings(data as ContestSettings);
   };
 
-  useEffect(() => { if (section === 'moderation') fetchPhotos(); }, [section, moderationStatus]);
+  useEffect(() => { if (section === 'moderation') { fetchPhotos(); fetchTags(); } }, [section, moderationStatus]);
   useEffect(() => { if (section === 'settings') fetchSettings(); }, [section]);
+  useEffect(() => { if (section === 'tags') fetchTags(); }, [section]);
+
+  const updatePhotoTag = async (photoId: string, newTagId: string) => {
+    const { error } = await supabase.from('contest_photos').update({ tag_id: newTagId } as never).eq('id', photoId);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    fetchPhotos();
+    toast({ title: 'Catégorie mise à jour' });
+  };
+
+  const addTag = async () => {
+    if (!newTag.trim()) return;
+    const { error } = await supabase.from('contest_tags' as never).insert({ label: newTag.trim() } as never);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    setNewTag('');
+    fetchTags();
+  };
+
+  const removeTag = async (id: string) => {
+    if (!confirm('Supprimer ce tag ? Les photos associées perdront leur catégorie.')) return;
+    const { error } = await supabase.from('contest_tags' as never).delete().eq('id', id);
+    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    fetchTags();
+  };
 
   const validate = async (id: string) => {
     await supabase.from('contest_photos').update({ status: 'validee' }).eq('id', id);
@@ -149,7 +182,10 @@ const PhotoAdmin: React.FC = () => {
 
   const SECTIONS = [
     { key: 'moderation' as const, label: `Photos (${photos.length})` },
-    ...(role === 'super_admin' ? [{ key: 'settings' as const, label: 'Paramètres concours' }] : []),
+    ...(role === 'super_admin' ? [
+      { key: 'tags' as const, label: `Catégories (${tags.length})` },
+      { key: 'settings' as const, label: 'Paramètres concours' },
+    ] : []),
   ];
 
   return (
@@ -215,6 +251,17 @@ const PhotoAdmin: React.FC = () => {
                   <p className="font-semibold">{p.titre}</p>
                   {p.author && <p className="text-xs text-muted-foreground">{(p.author as unknown as {prenom:string}).prenom} {(p.author as unknown as {nom:string}).nom} · {(p.author as unknown as {classe:string}).classe}</p>}
                 </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Catégorie</label>
+                  <select
+                    value={p.tag_id || ''}
+                    onChange={e => updatePhotoTag(p.id, e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">— Aucune —</option>
+                    {tags.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
 
                 {moderationStatus === 'en_attente' ? (
                   <>
@@ -244,7 +291,30 @@ const PhotoAdmin: React.FC = () => {
           </>
         )}
 
-        {/* Contest Settings */}
+        {/* Tags management */}
+        {section === 'tags' && (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
+              <h2 className="font-display text-base font-bold">Catégories disponibles</h2>
+              <div className="space-y-2">
+                {tags.map(t => (
+                  <div key={t.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                    <span className="flex-1 text-sm">{t.label}</span>
+                    <button onClick={() => removeTag(t.id)} className="text-destructive hover:text-destructive/80">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {tags.length === 0 && <p className="text-xs text-muted-foreground">Aucune catégorie</p>}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="Nouvelle catégorie…" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())} className="flex-1" />
+                <Button type="button" size="sm" variant="outline" onClick={addTag}>Ajouter</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {section === 'settings' && settings && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-4">
