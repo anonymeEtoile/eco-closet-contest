@@ -16,8 +16,11 @@ interface ContestPhoto {
   photo_url: string;
   status: string;
   banned: boolean;
+  tag_id: string | null;
   author?: { prenom: string; nom: string; classe: string };
 }
+
+interface Tag { id: string; label: string }
 
 interface ContestSettings {
   id: string;
