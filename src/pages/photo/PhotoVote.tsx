@@ -110,7 +110,15 @@ const PhotoVote: React.FC = () => {
   return (
     <div className="mode-photo flex min-h-screen flex-col bg-background pb-24">
       <div className="border-b border-border bg-card px-4 pb-4 pt-safe">
-        <h1 className="font-display text-xl font-bold">Voter</h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="font-display text-xl font-bold">Voter</h1>
+          <span className={cn(
+            "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+            votesActive ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive"
+          )}>
+            {votesActive ? 'Votes ouverts' : 'Votes désactivés'}
+          </span>
+        </div>
         {!votesActive && <p className="mt-1 text-sm text-muted-foreground">Les votes ne sont pas encore ouverts.</p>}
       </div>
       <div className="px-4 py-4 space-y-3">
