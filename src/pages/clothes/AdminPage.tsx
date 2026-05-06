@@ -305,7 +305,7 @@ const AdminPage: React.FC = () => {
   const SECTIONS = [
     { key: 'moderation', label: `Modération (${listings.length})` },
     ...(role === 'super_admin' ? [
-      { key: 'users', label: 'Utilisateurs' },
+      { key: 'users', label: `Utilisateurs (${users.length})` },
       { key: 'settings', label: 'Paramètres' },
     ] : []),
   ] as { key: typeof section; label: string }[];
