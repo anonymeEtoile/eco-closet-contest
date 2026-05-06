@@ -291,7 +291,30 @@ const PhotoAdmin: React.FC = () => {
           </>
         )}
 
-        {/* Contest Settings */}
+        {/* Tags management */}
+        {section === 'tags' && (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
+              <h2 className="font-display text-base font-bold">Catégories disponibles</h2>
+              <div className="space-y-2">
+                {tags.map(t => (
+                  <div key={t.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                    <span className="flex-1 text-sm">{t.label}</span>
+                    <button onClick={() => removeTag(t.id)} className="text-destructive hover:text-destructive/80">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {tags.length === 0 && <p className="text-xs text-muted-foreground">Aucune catégorie</p>}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="Nouvelle catégorie…" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())} className="flex-1" />
+                <Button type="button" size="sm" variant="outline" onClick={addTag}>Ajouter</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {section === 'settings' && settings && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-4">
