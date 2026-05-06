@@ -39,11 +39,18 @@ const PhotoAdmin: React.FC = () => {
   const [photos, setPhotos] = useState<ContestPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [motifs, setMotifs] = useState<Record<string, string>>({});
-  const [section, setSection] = useState<'moderation' | 'settings'>('moderation');
+  const [section, setSection] = useState<'moderation' | 'settings' | 'tags'>('moderation');
   const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'validee'>('en_attente');
   const [settings, setSettings] = useState<ContestSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [newTag, setNewTag] = useState('');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  const fetchTags = async () => {
+    const { data } = await supabase.from('contest_tags' as never).select('*').order('label');
+    setTags((data as Tag[]) || []);
+  };
 
   const fetchPhotos = async () => {
     setLoading(true);
