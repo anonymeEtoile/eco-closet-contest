@@ -251,6 +251,17 @@ const PhotoAdmin: React.FC = () => {
                   <p className="font-semibold">{p.titre}</p>
                   {p.author && <p className="text-xs text-muted-foreground">{(p.author as unknown as {prenom:string}).prenom} {(p.author as unknown as {nom:string}).nom} · {(p.author as unknown as {classe:string}).classe}</p>}
                 </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Catégorie</label>
+                  <select
+                    value={p.tag_id || ''}
+                    onChange={e => updatePhotoTag(p.id, e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">— Aucune —</option>
+                    {tags.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
 
                 {moderationStatus === 'en_attente' ? (
                   <>
