@@ -182,7 +182,10 @@ const PhotoAdmin: React.FC = () => {
 
   const SECTIONS = [
     { key: 'moderation' as const, label: `Photos (${photos.length})` },
-    ...(role === 'super_admin' ? [{ key: 'settings' as const, label: 'Paramètres concours' }] : []),
+    ...(role === 'super_admin' ? [
+      { key: 'tags' as const, label: `Catégories (${tags.length})` },
+      { key: 'settings' as const, label: 'Paramètres concours' },
+    ] : []),
   ];
 
   return (
