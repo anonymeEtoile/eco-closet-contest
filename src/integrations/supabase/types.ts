@@ -23,6 +23,7 @@ export type Database = {
           photo_url: string
           refus_motif: string | null
           status: Database["public"]["Enums"]["photo_status"]
+          tag_id: string | null
           titre: string
           user_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           photo_url: string
           refus_motif?: string | null
           status?: Database["public"]["Enums"]["photo_status"]
+          tag_id?: string | null
           titre: string
           user_id: string
         }
@@ -45,10 +47,19 @@ export type Database = {
           photo_url?: string
           refus_motif?: string | null
           status?: Database["public"]["Enums"]["photo_status"]
+          tag_id?: string | null
           titre?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contest_photos_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "contest_tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contest_settings: {
         Row: {
@@ -83,6 +94,24 @@ export type Database = {
           titre?: string
           updated_at?: string
           votes_actifs?: boolean
+        }
+        Relationships: []
+      }
+      contest_tags: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
         }
         Relationships: []
       }
