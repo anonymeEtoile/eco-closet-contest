@@ -196,7 +196,8 @@ const PhotoAdmin: React.FC = () => {
       recompenses: settings.recompenses || null,
       votes_actifs: settings.votes_actifs,
       classement_public: settings.classement_public,
-    }).eq('id', settings.id);
+      votes_visibles: settings.votes_visibles,
+    } as never).eq('id', settings.id);
     setSavingSettings(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); }
     else { toast({ title: 'Paramètres du concours sauvegardés !' }); }
