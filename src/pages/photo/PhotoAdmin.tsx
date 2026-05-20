@@ -31,6 +31,16 @@ interface ContestSettings {
   recompenses: string | null;
   votes_actifs: boolean;
   classement_public: boolean;
+  votes_visibles: boolean;
+}
+
+interface VoteRow {
+  id: string;
+  voter_id: string;
+  photo_id: string;
+  created_at: string;
+  voter?: { prenom: string; nom: string; classe: string };
+  photo?: { titre: string; tag_id: string | null };
 }
 
 const PhotoAdmin: React.FC = () => {
