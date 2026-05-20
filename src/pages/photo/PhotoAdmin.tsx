@@ -116,9 +116,28 @@ const PhotoAdmin: React.FC = () => {
     if (data) setSettings(data as ContestSettings);
   };
 
+  const fetchVotes = async () => {
+    const { data: voteData } = await supabase.from('contest_votes').select('id, voter_id, photo_id, created_at').order('created_at', { ascending: false });
+    if (!voteData) { setVotes([]); return; }
+    const voterIds = [...new Set(voteData.map(v => v.voter_id))];
+    const photoIds = [...new Set(voteData.map(v => v.photo_id))];
+    const [profilesRes, photosRes] = await Promise.all([
+      voterIds.length ? supabase.from('profiles').select('id, prenom, nom, classe').in('id', voterIds) : Promise.resolve({ data: [] }),
+      photoIds.length ? supabase.from('contest_photos').select('id, titre, tag_id').in('id', photoIds) : Promise.resolve({ data: [] }),
+    ]);
+    const pMap = new Map(((profilesRes.data as { id: string; prenom: string; nom: string; classe: string }[]) || []).map(p => [p.id, p]));
+    const phMap = new Map(((photosRes.data as { id: string; titre: string; tag_id: string | null }[]) || []).map(p => [p.id, p]));
+    setVotes(voteData.map(v => ({
+      ...v,
+      voter: pMap.get(v.voter_id) ? { prenom: pMap.get(v.voter_id)!.prenom, nom: pMap.get(v.voter_id)!.nom, classe: pMap.get(v.voter_id)!.classe } : undefined,
+      photo: phMap.get(v.photo_id) ? { titre: phMap.get(v.photo_id)!.titre, tag_id: phMap.get(v.photo_id)!.tag_id } : undefined,
+    })));
+  };
+
   useEffect(() => { if (section === 'moderation') { fetchPhotos(); fetchTags(); } }, [section, moderationStatus]);
   useEffect(() => { if (section === 'settings') fetchSettings(); }, [section]);
   useEffect(() => { if (section === 'tags') fetchTags(); }, [section]);
+  useEffect(() => { if (section === 'votes') { fetchVotes(); fetchTags(); } }, [section]);
 
   const updatePhotoTag = async (photoId: string, newTagId: string) => {
     const { error } = await supabase.from('contest_photos').update({ tag_id: newTagId } as never).eq('id', photoId);
