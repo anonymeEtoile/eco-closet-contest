@@ -395,6 +395,11 @@ const PhotoAdmin: React.FC = () => {
                 <span className="text-sm font-medium">Classement public</span>
                 <input type="checkbox" checked={settings.classement_public} onChange={e => setSettings(s => s ? { ...s, classement_public: e.target.checked } : s)} className="accent-primary h-5 w-5" />
               </label>
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-sm font-medium">Afficher le nombre de votes aux utilisateurs</span>
+                <input type="checkbox" checked={settings.votes_visibles} onChange={e => setSettings(s => s ? { ...s, votes_visibles: e.target.checked } : s)} className="accent-primary h-5 w-5" />
+              </label>
+              <p className="text-[11px] text-muted-foreground">Si désactivé, seuls les admins/modérateurs voient le nombre de votes.</p>
             </div>
 
             <Button className="w-full gap-2 py-5 text-base font-semibold" onClick={saveSettings} disabled={savingSettings}>
