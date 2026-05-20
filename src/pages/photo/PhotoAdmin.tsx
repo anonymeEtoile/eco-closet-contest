@@ -347,6 +347,35 @@ const PhotoAdmin: React.FC = () => {
           </div>
         )}
 
+        {section === 'votes' && (
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+              <h2 className="font-display text-base font-bold">Tous les votes ({votes.length})</h2>
+              <p className="text-xs text-muted-foreground">Visible uniquement aux modérateurs et admins.</p>
+            </div>
+            {votes.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Aucun vote enregistré.</p>
+            ) : votes.map(v => {
+              const tagLabel = tags.find(t => t.id === v.photo?.tag_id)?.label;
+              return (
+                <div key={v.id} className="rounded-xl border border-border bg-card p-3 shadow-card">
+                  <p className="text-sm">
+                    <span className="font-semibold">{v.voter?.prenom} {v.voter?.nom}</span>
+                    <span className="text-muted-foreground"> ({v.voter?.classe})</span>
+                    <span className="text-muted-foreground"> → </span>
+                    <span className="font-semibold">{v.photo?.titre || '—'}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {tagLabel && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary mr-2">{tagLabel}</span>}
+                    {new Date(v.created_at).toLocaleString('fr-FR')}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+
         {section === 'settings' && settings && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-4">
