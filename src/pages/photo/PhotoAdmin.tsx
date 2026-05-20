@@ -31,6 +31,16 @@ interface ContestSettings {
   recompenses: string | null;
   votes_actifs: boolean;
   classement_public: boolean;
+  votes_visibles: boolean;
+}
+
+interface VoteRow {
+  id: string;
+  voter_id: string;
+  photo_id: string;
+  created_at: string;
+  voter?: { prenom: string; nom: string; classe: string };
+  photo?: { titre: string; tag_id: string | null };
 }
 
 const PhotoAdmin: React.FC = () => {
@@ -39,12 +49,13 @@ const PhotoAdmin: React.FC = () => {
   const [photos, setPhotos] = useState<ContestPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [motifs, setMotifs] = useState<Record<string, string>>({});
-  const [section, setSection] = useState<'moderation' | 'settings' | 'tags'>('moderation');
+  const [section, setSection] = useState<'moderation' | 'settings' | 'tags' | 'votes'>('moderation');
   const [moderationStatus, setModerationStatus] = useState<'en_attente' | 'validee'>('en_attente');
   const [settings, setSettings] = useState<ContestSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [tags, setTags] = useState<Tag[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [votes, setVotes] = useState<VoteRow[]>([]);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   const fetchTags = async () => {
@@ -105,9 +116,28 @@ const PhotoAdmin: React.FC = () => {
     if (data) setSettings(data as ContestSettings);
   };
 
+  const fetchVotes = async () => {
+    const { data: voteData } = await supabase.from('contest_votes').select('id, voter_id, photo_id, created_at').order('created_at', { ascending: false });
+    if (!voteData) { setVotes([]); return; }
+    const voterIds = [...new Set(voteData.map(v => v.voter_id))];
+    const photoIds = [...new Set(voteData.map(v => v.photo_id))];
+    const [profilesRes, photosRes] = await Promise.all([
+      voterIds.length ? supabase.from('profiles').select('id, prenom, nom, classe').in('id', voterIds) : Promise.resolve({ data: [] }),
+      photoIds.length ? supabase.from('contest_photos').select('id, titre, tag_id').in('id', photoIds) : Promise.resolve({ data: [] }),
+    ]);
+    const pMap = new Map(((profilesRes.data as { id: string; prenom: string; nom: string; classe: string }[]) || []).map(p => [p.id, p]));
+    const phMap = new Map(((photosRes.data as { id: string; titre: string; tag_id: string | null }[]) || []).map(p => [p.id, p]));
+    setVotes(voteData.map(v => ({
+      ...v,
+      voter: pMap.get(v.voter_id) ? { prenom: pMap.get(v.voter_id)!.prenom, nom: pMap.get(v.voter_id)!.nom, classe: pMap.get(v.voter_id)!.classe } : undefined,
+      photo: phMap.get(v.photo_id) ? { titre: phMap.get(v.photo_id)!.titre, tag_id: phMap.get(v.photo_id)!.tag_id } : undefined,
+    })));
+  };
+
   useEffect(() => { if (section === 'moderation') { fetchPhotos(); fetchTags(); } }, [section, moderationStatus]);
   useEffect(() => { if (section === 'settings') fetchSettings(); }, [section]);
   useEffect(() => { if (section === 'tags') fetchTags(); }, [section]);
+  useEffect(() => { if (section === 'votes') { fetchVotes(); fetchTags(); } }, [section]);
 
   const updatePhotoTag = async (photoId: string, newTagId: string) => {
     const { error } = await supabase.from('contest_photos').update({ tag_id: newTagId } as never).eq('id', photoId);
@@ -166,7 +196,8 @@ const PhotoAdmin: React.FC = () => {
       recompenses: settings.recompenses || null,
       votes_actifs: settings.votes_actifs,
       classement_public: settings.classement_public,
-    }).eq('id', settings.id);
+      votes_visibles: settings.votes_visibles,
+    } as never).eq('id', settings.id);
     setSavingSettings(false);
     if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); }
     else { toast({ title: 'Paramètres du concours sauvegardés !' }); }
@@ -182,6 +213,7 @@ const PhotoAdmin: React.FC = () => {
 
   const SECTIONS = [
     { key: 'moderation' as const, label: `Photos (${photos.length})` },
+    { key: 'votes' as const, label: 'Votes' },
     ...(role === 'super_admin' ? [
       { key: 'tags' as const, label: `Catégories (${tags.length})` },
       { key: 'settings' as const, label: 'Paramètres concours' },
@@ -315,6 +347,35 @@ const PhotoAdmin: React.FC = () => {
           </div>
         )}
 
+        {section === 'votes' && (
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+              <h2 className="font-display text-base font-bold">Tous les votes ({votes.length})</h2>
+              <p className="text-xs text-muted-foreground">Visible uniquement aux modérateurs et admins.</p>
+            </div>
+            {votes.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Aucun vote enregistré.</p>
+            ) : votes.map(v => {
+              const tagLabel = tags.find(t => t.id === v.photo?.tag_id)?.label;
+              return (
+                <div key={v.id} className="rounded-xl border border-border bg-card p-3 shadow-card">
+                  <p className="text-sm">
+                    <span className="font-semibold">{v.voter?.prenom} {v.voter?.nom}</span>
+                    <span className="text-muted-foreground"> ({v.voter?.classe})</span>
+                    <span className="text-muted-foreground"> → </span>
+                    <span className="font-semibold">{v.photo?.titre || '—'}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {tagLabel && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary mr-2">{tagLabel}</span>}
+                    {new Date(v.created_at).toLocaleString('fr-FR')}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+
         {section === 'settings' && settings && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-4">
@@ -363,6 +424,11 @@ const PhotoAdmin: React.FC = () => {
                 <span className="text-sm font-medium">Classement public</span>
                 <input type="checkbox" checked={settings.classement_public} onChange={e => setSettings(s => s ? { ...s, classement_public: e.target.checked } : s)} className="accent-primary h-5 w-5" />
               </label>
+              <label className="flex items-center justify-between cursor-pointer">
+                <span className="text-sm font-medium">Afficher le nombre de votes aux utilisateurs</span>
+                <input type="checkbox" checked={settings.votes_visibles} onChange={e => setSettings(s => s ? { ...s, votes_visibles: e.target.checked } : s)} className="accent-primary h-5 w-5" />
+              </label>
+              <p className="text-[11px] text-muted-foreground">Si désactivé, seuls les admins/modérateurs voient le nombre de votes.</p>
             </div>
 
             <Button className="w-full gap-2 py-5 text-base font-semibold" onClick={saveSettings} disabled={savingSettings}>
