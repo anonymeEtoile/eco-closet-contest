@@ -213,6 +213,7 @@ const PhotoAdmin: React.FC = () => {
 
   const SECTIONS = [
     { key: 'moderation' as const, label: `Photos (${photos.length})` },
+    { key: 'votes' as const, label: 'Votes' },
     ...(role === 'super_admin' ? [
       { key: 'tags' as const, label: `Catégories (${tags.length})` },
       { key: 'settings' as const, label: 'Paramètres concours' },
