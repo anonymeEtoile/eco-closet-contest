@@ -72,6 +72,7 @@ export type Database = {
           titre: string
           updated_at: string
           votes_actifs: boolean
+          votes_visibles: boolean
         }
         Insert: {
           classement_public?: boolean
@@ -83,6 +84,7 @@ export type Database = {
           titre?: string
           updated_at?: string
           votes_actifs?: boolean
+          votes_visibles?: boolean
         }
         Update: {
           classement_public?: boolean
@@ -94,6 +96,7 @@ export type Database = {
           titre?: string
           updated_at?: string
           votes_actifs?: boolean
+          votes_visibles?: boolean
         }
         Relationships: []
       }
@@ -120,18 +123,21 @@ export type Database = {
           created_at: string
           id: string
           photo_id: string
+          tag_id: string | null
           voter_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           photo_id: string
+          tag_id?: string | null
           voter_id: string
         }
         Update: {
           created_at?: string
           id?: string
           photo_id?: string
+          tag_id?: string | null
           voter_id?: string
         }
         Relationships: [
